@@ -1,0 +1,16 @@
+{
+  "hero": {
+    "background": {
+      "src": "https://picsum.photos/seed/hero_bg/1920/1080",
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "property": {
+    "default": {
+      "src": "https://picsum.photos/seed/prop_def/600/400",
+      "width": 600,
+      "height": 400
+    }
+  }
+}
