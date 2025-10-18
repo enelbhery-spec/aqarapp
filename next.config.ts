@@ -29,10 +29,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "picsum.photos",
       },
-      {
-        protocol: "https",
-        hostname: "firebasestorage.googleapis.com",
-      },
+      
       {
         protocol: "https",
         hostname: "rkjeobavbxsarxbwmffj.supabase.co", // ✅ أضفناه لتفادي خطأ الصورة من Supabase
