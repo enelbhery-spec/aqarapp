@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev -p 9002",
     "build": "next build",
-    "start": "next dev -p 9002",
+    "start": "next start -p 9002"
   },
   "optionalDependencies": {
     "@next/swc-linux-x64-gnu": "15.5.6",
-    "@next/swc-linux-x64-musl": "15.5.6"
+    "@next/swc-linux-x64-musl": "15.5.6",
+    "@next/swc-win32-x64-msvc": "15.5.6"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -35,7 +36,7 @@
     "date-fns": "^3.6.0",
     "framer-motion": "^11.3.2",
     "lucide-react": "^0.363.0",
-    "next": "^15.5.6",
+    "next": "15.5.6",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -53,9 +54,8 @@
     "postcss": "^8.4.45",
     "tailwindcss": "^3.4.10",
     "typescript": "^5.6.3"
-  }
+  },
   "engines": {
-  "node": ">=18.17.0"
-}
-
+    "node": ">=18.17.0"
+  }
 }
