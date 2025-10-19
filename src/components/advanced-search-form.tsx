@@ -24,6 +24,7 @@ import {
   BedDouble,
   Bath,
 } from "lucide-react";
+import { useRouter } from "next/navigation"; // ✅ لتفعيل التوجيه عند الضغط على الزر
 
 // ✅ إنشاء اتصال بـ Supabase
 const supabase = createClient(
@@ -45,6 +46,7 @@ type SearchFormValues = z.infer<typeof searchSchema>;
 export function AdvancedSearchForm() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<SearchFormValues>({
     resolver: zodResolver(searchSchema),
@@ -85,7 +87,6 @@ export function AdvancedSearchForm() {
     if (error) {
       console.error("❌ خطأ في جلب البيانات:", error);
     } else {
-      console.log("✅ نتائج البحث:", data);
       setResults(data || []);
     }
 
@@ -94,6 +95,7 @@ export function AdvancedSearchForm() {
 
   return (
     <div className="space-y-6">
+      {/* 🔍 نموذج البحث */}
       <Card className="shadow-2xl border-2 border-primary/10 backdrop-blur-sm bg-background/80">
         <CardContent className="p-4 md:p-6">
           <Form {...form}>
@@ -146,10 +148,7 @@ export function AdvancedSearchForm() {
                         <span>الموقع</span>
                       </div>
                       <FormControl>
-                        <Input
-                          placeholder="مثال: حدائق أكتوبر"
-                          {...field}
-                        />
+                        <Input placeholder="مثال: حدائق أكتوبر" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -240,18 +239,18 @@ export function AdvancedSearchForm() {
         </CardContent>
       </Card>
 
-      {/* عرض النتائج */}
+      {/* ✅ عرض النتائج */}
       {results.length > 0 && (
         <Card className="border-2 border-primary/10">
           <CardContent className="p-4">
             <h3 className="text-lg font-bold mb-3">
               النتائج ({results.length})
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {results.map((item, index) => (
                 <li
                   key={index}
-                  className="p-3 border rounded-lg bg-muted/20 hover:bg-muted/40 transition"
+                  className="p-4 border rounded-lg bg-muted/20 hover:bg-muted/40 transition"
                 >
                   <p>
                     🏠 <strong>{item.property_type}</strong> في{" "}
@@ -261,6 +260,14 @@ export function AdvancedSearchForm() {
                     📏 {item.area} م² – 🛏 {item.bedrooms} غرف – 🚿{" "}
                     {item.bathrooms} حمام
                   </p>
+
+                  {/* 🔘 زر تفاصيل العقار */}
+                  <Button
+                    onClick={() => router.push(`/properties/${item.id}`)}
+                    className="mt-3"
+                  >
+                    تفاصيل العقار
+                  </Button>
                 </li>
               ))}
             </ul>

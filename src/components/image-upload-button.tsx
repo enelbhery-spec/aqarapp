@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState } from 'react';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { createClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -16,9 +15,15 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
+// إنشاء عميل Supabase (تأكد أن المفاتيح مضبوطة في بيئة المشروع)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 interface ImageUploadButtonProps {
   onUploadComplete: (url: string) => void;
-  storagePath: string; // e.g., 'properties/some-id/'
+  storagePath: string; // e.g. "properties/some-id/"
   buttonText?: string;
   variant?: "default" | "outline" | "ghost" | "secondary" | "link" | "destructive";
 }
@@ -33,7 +38,6 @@ export function ImageUploadButton({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const storage = getStorage();
   const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,25 +51,58 @@ export function ImageUploadButton({
   const handleUpload = async () => {
     if (!imageFile) return;
 
-    setIsUploading(true);
-    try {
-      const fileName = `${Date.now()}-${imageFile.name}`;
-      const imageRef = ref(storage, `${storagePath}${fileName}`);
-      
-      const snapshot = await uploadBytes(imageRef, imageFile);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-
-      onUploadComplete(downloadURL);
-      
+    // ✅ التحقق من أن المسار داخل مجلد properties فقط
+    if (!storagePath.startsWith('properties/')) {
       toast({
-        title: 'تم الرفع بنجاح',
-        description: 'تم تحديث الصورة.',
+        title: 'مسار مرفوض',
+        description: 'يجب حفظ جميع الصور داخل مجلد properties فقط.',
+        variant: 'destructive',
       });
-    } catch (error) {
-      console.error('Error uploading image:', error);
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // تأمين المسار
+      const safePath = storagePath.endsWith('/') ? storagePath : `${storagePath}/`;
+      const fileName = `${Date.now()}-${imageFile.name}`;
+      const fullPath = `${safePath}${fileName}`;
+
+      // رفع الصورة إلى Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('property_images') // اسم البكت (bucket) لديك
+        .upload(fullPath, imageFile, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Error uploading:', error);
+        toast({
+          title: 'فشل الرفع',
+          description: 'حدث خطأ أثناء رفع الصورة.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // الحصول على الرابط العام
+      const { data: publicUrlData } = supabase.storage
+        .from('property_images')
+        .getPublicUrl(fullPath);
+
+      onUploadComplete(publicUrlData.publicUrl);
+
       toast({
-        title: 'فشل الرفع',
-        description: 'حدث خطأ أثناء رفع الصورة. يرجى المحاولة مرة أخرى.',
+        title: 'تم الرفع بنجاح ✅',
+        description: 'تم حفظ الصورة داخل مجلد العقار.',
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'خطأ غير متوقع',
+        description: 'حدث خطأ أثناء رفع الصورة.',
         variant: 'destructive',
       });
     } finally {
@@ -94,11 +131,12 @@ export function ImageUploadButton({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد تغيير الصورة</DialogTitle>
+            <DialogTitle>تأكيد رفع الصورة</DialogTitle>
             <DialogDescription>
-              هل أنت متأكد أنك تريد رفع هذه الصورة؟ سيتم استبدال الصورة الحالية.
+              هل تريد بالتأكيد رفع هذه الصورة؟ سيتم حفظها داخل مجلد العقار فقط.
             </DialogDescription>
           </DialogHeader>
+
           {imageFile && (
             <div className="my-4 flex justify-center">
               <img
@@ -108,6 +146,7 @@ export function ImageUploadButton({
               />
             </div>
           )}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" onClick={() => setImageFile(null)}>إلغاء</Button>
@@ -122,4 +161,3 @@ export function ImageUploadButton({
     </>
   );
 }
-

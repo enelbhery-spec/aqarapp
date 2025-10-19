@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit3 } from "lucide-react";
 
-
 export default function MyPropertiesPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -21,10 +20,11 @@ export default function MyPropertiesPage() {
       const { data } = await supabase.auth.getUser();
       if (!data?.user) {
         router.replace("/login");
-      } else {
-        setUser(data.user);
-        await fetchProperties(data.user.id);
+        return;
       }
+
+      setUser(data.user);
+      await fetchProperties(data.user.id);
       setLoading(false);
     }
 
@@ -35,38 +35,56 @@ export default function MyPropertiesPage() {
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("خطأ في جلب العقارات:", error);
-      } else {
-        setProperties(data || []);
-      }
+      if (error) console.error("خطأ في جلب العقارات:", error);
+      else setProperties(data || []);
     }
 
     fetchUserAndProperties();
   }, [router]);
 
-  // دالة لتحسين روابط الصور
+  // تصحيح روابط الصور
   const getValidImageUrl = (url: string) => {
     if (!url) return null;
-    return url.startsWith("https://") ? url : url.replace("https:/", "https://");
+    if (url.startsWith("https://")) return url;
+    return url.startsWith("http:/") ? url.replace("http:/", "https://") : url;
   };
 
-  // دالة حذف العقار
-  const handleDelete = async (id: string) => {
+  // حذف العقار (مع حذف الصور من Supabase Storage)
+  const handleDelete = async (id: string, images?: string[]) => {
     const confirmDelete = confirm("هل أنت متأكد أنك تريد حذف هذا العقار؟");
     if (!confirmDelete) return;
 
-    const { error } = await supabase.from("properties").delete().eq("id", id);
+    try {
+      // 🧹 حذف الصور من التخزين
+      if (images && images.length > 0) {
+        const paths = images.map((url) => {
+          try {
+            const path = url.split("/property_images/")[1];
+            return path;
+          } catch {
+            return null;
+          }
+        }).filter(Boolean) as string[];
 
-    if (error) {
-      alert("حدث خطأ أثناء الحذف: " + error.message);
-    } else {
+        if (paths.length > 0) {
+          await supabase.storage.from("property_images").remove(paths);
+        }
+      }
+
+      // 🧾 حذف السجل من جدول properties
+      const { error } = await supabase.from("properties").delete().eq("id", id);
+      if (error) throw error;
+
+      // ✅ تحديث الحالة محلياً
       setProperties((prev) => prev.filter((p) => p.id !== id));
       alert("✅ تم حذف العقار بنجاح");
+    } catch (err: any) {
+      alert("حدث خطأ أثناء الحذف: " + err.message);
+      console.error("❌ خطأ في الحذف:", err);
     }
   };
 
-  // دالة التعديل (نقل المستخدم إلى صفحة تعديل العقار)
+  // الانتقال إلى صفحة التعديل
   const handleEdit = (id: string) => {
     router.push(`/edit-property/${id}`);
   };
@@ -98,15 +116,18 @@ export default function MyPropertiesPage() {
                 ? JSON.parse(property.images)
                 : [];
 
+              const firstImage =
+                imagesArray.length > 0 ? getValidImageUrl(imagesArray[0]) : null;
+
               return (
                 <div
                   key={property.id}
                   className="border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
                 >
                   {/* ✅ عرض الصورة */}
-                  {imagesArray.length > 0 ? (
+                  {firstImage ? (
                     <img
-                      src={getValidImageUrl(imagesArray[0])}
+                      src={firstImage}
                       alt={property.title}
                       className="w-full h-48 object-cover rounded-md mb-3"
                     />
@@ -134,7 +155,7 @@ export default function MyPropertiesPage() {
                       تعديل
                     </Button>
                     <Button
-                      onClick={() => handleDelete(property.id)}
+                      onClick={() => handleDelete(property.id, imagesArray)}
                       className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
                     >
                       <Trash2 className="w-4 h-4" />

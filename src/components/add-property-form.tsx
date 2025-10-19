@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import imageCompression from "browser-image-compression";
 
-// إعداد Supabase client
+// إعداد Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -17,37 +18,94 @@ export function AddPropertyForm() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [location, setLocation] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [images, setImages] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // ✅ رفع الصور بعد ضغطها
+  const uploadImages = async (files: FileList) => {
+    const uploadedUrls: string[] = [];
+
+    for (const file of Array.from(files)) {
+      try {
+        // ضغط الصورة قبل الرفع
+        const compressedFile = await imageCompression(file, {
+          maxSizeMB: 1, // لا تتجاوز 1 ميجا بعد الضغط
+          maxWidthOrHeight: 1280, // تقليل أبعاد الصورة
+          useWebWorker: true,
+        });
+
+        const fileExt = compressedFile.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `property_images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("properties")
+          .upload(filePath, compressedFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(uploadError);
+          toast.error(`خطأ في رفع الصورة: ${file.name}`);
+          continue;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("properties")
+          .getPublicUrl(filePath);
+
+        if (urlData?.publicUrl) {
+          uploadedUrls.push(urlData.publicUrl);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error(`تعذر رفع الصورة ${file.name}`);
+      }
+    }
+
+    return uploadedUrls;
+  };
+
+  // ✅ عند إرسال النموذج
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from("properties")
-        .insert([
-          {
-            title,
-            description,
-            price: parseFloat(price),
-            location,
-            image_url: imageUrl,
-          },
-        ]);
+      let imageUrls: string[] = [];
+
+      if (images && images.length > 0) {
+        if (images.length > 5) {
+          toast.error("يمكن رفع 5 صور كحد أقصى فقط!");
+          setLoading(false);
+          return;
+        }
+
+        imageUrls = await uploadImages(images);
+      }
+
+      const { error } = await supabase.from("properties").insert([
+        {
+          title,
+          description,
+          price: parseFloat(price),
+          location,
+          images: imageUrls.length ? JSON.stringify(imageUrls) : null,
+        },
+      ]);
 
       if (error) throw error;
 
-      toast.success("تم إضافة العقار بنجاح ✅");
+      toast.success("✅ تم إضافة العقار بنجاح!");
       setTitle("");
       setDescription("");
       setPrice("");
       setLocation("");
-      setImageUrl("");
+      setImages(null);
     } catch (error: any) {
       console.error(error);
-      toast.error("حدث خطأ أثناء إضافة العقار ❌");
+      toast.error("❌ حدث خطأ أثناء إضافة العقار.");
     } finally {
       setLoading(false);
     }
@@ -99,11 +157,12 @@ export function AddPropertyForm() {
       </div>
 
       <div>
-        <label className="block mb-2 font-medium">رابط الصورة</label>
+        <label className="block mb-2 font-medium">صور العقار (حد أقصى 5 صور)</label>
         <Input
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="ضع رابط صورة العقار (اختياري)"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => setImages(e.target.files)}
         />
       </div>
 

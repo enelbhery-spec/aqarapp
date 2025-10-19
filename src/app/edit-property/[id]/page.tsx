@@ -1,34 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
-  const propertyId = params?.id as string;
+  const propertyId = params.id as string;
 
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-
-  // 🧩 بيانات العقار
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [currency, setCurrency] = useState("EGP");
-  const [city, setCity] = useState("");
-  const [location, setLocation] = useState("");
-  const [area, setArea] = useState("");
-  const [bedrooms, setBedrooms] = useState("");
-  const [bathrooms, setBathrooms] = useState("");
-  const [phone, setPhone] = useState("");
+  const [property, setProperty] = useState<any>(null);
   const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [newFiles, setNewFiles] = useState<FileList | null>(null);
 
-  // ✅ تحميل بيانات العقار
+  // ✅ جلب بيانات العقار الحالي
   useEffect(() => {
     async function fetchProperty() {
       const { data, error } = await supabase
@@ -38,223 +29,228 @@ export default function EditPropertyPage() {
         .single();
 
       if (error) {
-        console.error("❌ خطأ في جلب بيانات العقار:", error);
-      } else if (data) {
-        setTitle(data.title || "");
-        setDescription(data.description || "");
-        setPrice(data.price?.toString() || "");
-        setCurrency(data.currency || "EGP");
-        setCity(data.city || "");
-        setLocation(data.location || "");
-        setArea(data.area?.toString() || "");
-        setBedrooms(data.bedrooms?.toString() || "");
-        setBathrooms(data.bathrooms?.toString() || "");
-        setPhone(data.phone || "");
-        setImages(
-          Array.isArray(data.images)
-            ? data.images
-            : data.images
-            ? JSON.parse(data.images)
-            : []
-        );
+        console.error("❌ خطأ أثناء جلب العقار:", error.message);
+        return;
       }
 
-      setLoading(false);
+      setProperty(data);
+      setImages(data.images || []);
     }
 
     if (propertyId) fetchProperty();
   }, [propertyId]);
 
-  // ✅ رفع الصور الجديدة
-  async function handleImageUpload(event: any) {
-    const files = event.target.files;
-    if (!files?.length) return;
-
-    const uploadedUrls: string[] = [];
-
-    for (const file of files) {
-      const fileName = `${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage
-        .from("property-images")
-        .upload(fileName, file);
-
-      if (error) {
-        console.error("❌ خطأ في رفع الصورة:", error);
-        continue;
-      }
-
-      const { data: publicUrl } = supabase.storage
-        .from("property-images")
-        .getPublicUrl(fileName);
-
-      if (publicUrl?.publicUrl) uploadedUrls.push(publicUrl.publicUrl);
+  // ✅ اختيار الصور الجديدة
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) {
+      setNewFiles(e.target.files);
     }
-
-    setImages((prev) => [...prev, ...uploadedUrls]);
-  }
-
-  // 🗑️ حذف صورة
-  const handleRemoveImage = (url: string) => {
-    setImages((prev) => prev.filter((img) => img !== url));
   };
 
-  // ✅ حفظ التعديلات
-  async function handleUpdate() {
-    setUpdating(true);
+  // ✅ رفع الصور دفعة واحدة
+  const handleImageUpload = async () => {
+    if (!newFiles || !propertyId) return;
+    setLoading(true);
 
-    const updateData = {
-      title: title || "",
-      description: description || "",
-      price: price || "",
-      currency: currency || "EGP",
-      city: city || "",
-      location: location || "",
-      area: area || "",
-      bedrooms: bedrooms || "",
-      bathrooms: bathrooms || "",
-      phone: phone || "",
-      images: images.length ? images : [],
-      updated_at: new Date(),
-    };
+    const uploadPromises = Array.from(newFiles).map(async (file) => {
+      const fileName = `${Date.now()}-${file.name}`;
+      const filePath = `properties/${propertyId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("property-images")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error("❌ خطأ في رفع الصورة:", uploadError.message);
+        return null;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("property-images")
+        .getPublicUrl(filePath);
+
+      return publicUrlData?.publicUrl || null;
+    });
+
+    const results = await Promise.all(uploadPromises);
+    const validUrls = results.filter((url): url is string => !!url);
+
+    if (validUrls.length > 0) {
+      const updatedImages = [...images, ...validUrls];
+      setImages(updatedImages);
+
+      await supabase
+        .from("properties")
+        .update({ images: updatedImages })
+        .eq("id", propertyId);
+    }
+
+    setNewFiles(null);
+    setLoading(false);
+  };
+
+  // ✅ حذف صورة واحدة
+  const handleDeleteImage = async (url: string) => {
+    const path = url.split("/property-images/")[1];
+    if (!path) return;
+
+    await supabase.storage.from("property-images").remove([path]);
+
+    const updatedImages = images.filter((img) => img !== url);
+    setImages(updatedImages);
+
+    await supabase
+      .from("properties")
+      .update({ images: updatedImages })
+      .eq("id", propertyId);
+  };
+
+  // ✅ حذف العقار بالكامل
+  const handleDeleteProperty = async () => {
+    if (!confirm("هل أنت متأكد من حذف هذا العقار؟")) return;
+
+    // حذف كل الصور من التخزين
+    const paths = images
+      .map((url) => url.split("/property-images/")[1])
+      .filter(Boolean);
+
+    if (paths.length > 0) {
+      await supabase.storage.from("property-images").remove(paths);
+    }
+
+    // حذف العقار من قاعدة البيانات
+    await supabase.from("properties").delete().eq("id", propertyId);
+
+    alert("✅ تم حذف العقار بنجاح");
+    router.replace("/dashboard");
+  };
+
+  // ✅ حفظ التعديلات على بيانات العقار
+  const handleSave = async () => {
+    if (!property) return;
+    setLoading(true);
 
     const { error } = await supabase
       .from("properties")
-      .update(updateData)
+      .update({
+        title: property.title,
+        description: property.description,
+        price: property.price,
+        location: property.location,
+        images,
+      })
       .eq("id", propertyId);
 
-    setUpdating(false);
+    setLoading(false);
 
     if (error) {
-      alert("حدث خطأ أثناء حفظ التعديلات ❌");
-      console.error("تفاصيل الخطأ:", JSON.stringify(error, null, 2));
+      alert("❌ حدث خطأ أثناء الحفظ");
+      console.error(error);
     } else {
       alert("✅ تم حفظ التعديلات بنجاح");
-      router.push("/my-properties");
     }
-  }
+  };
 
-  if (loading) return <p className="text-center mt-10">جاري تحميل البيانات...</p>;
+  if (!property) return <div className="p-6">⏳ جاري تحميل بيانات العقار...</div>;
 
   return (
-    <div className="container py-12">
-      <h1 className="text-2xl font-bold mb-6">تعديل العقار</h1>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">تعديل العقار</h1>
 
-      <div className="space-y-4">
-        {/* 🏡 العنوان */}
+      <div className="flex flex-col gap-4">
+        <input
+          type="text"
+          value={property.title || ""}
+          onChange={(e) => setProperty({ ...property, title: e.target.value })}
+          placeholder="عنوان العقار"
+          className="border p-2 rounded"
+        />
+
+        <textarea
+          value={property.description || ""}
+          onChange={(e) =>
+            setProperty({ ...property, description: e.target.value })
+          }
+          placeholder="وصف العقار"
+          className="border p-2 rounded h-24"
+        />
+
+        <input
+          type="number"
+          value={property.price || ""}
+          onChange={(e) =>
+            setProperty({ ...property, price: Number(e.target.value) })
+          }
+          placeholder="السعر"
+          className="border p-2 rounded"
+        />
+
+        <input
+          type="text"
+          value={property.location || ""}
+          onChange={(e) =>
+            setProperty({ ...property, location: e.target.value })
+          }
+          placeholder="الموقع"
+          className="border p-2 rounded"
+        />
+
         <div>
-          <label className="block font-medium mb-1">العنوان</label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-        </div>
-
-        {/* 📄 الوصف */}
-        <div>
-          <label className="block font-medium mb-1">الوصف</label>
-          <Textarea
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-
-        {/* 💰 السعر والعملة */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-1">السعر</label>
-            <Input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">العملة</label>
-            <Input value={currency} onChange={(e) => setCurrency(e.target.value)} />
-          </div>
-        </div>
-
-        {/* 📍 المدينة والموقع */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-1">المدينة</label>
-            <Input value={city} onChange={(e) => setCity(e.target.value)} />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">الموقع</label>
-            <Input value={location} onChange={(e) => setLocation(e.target.value)} />
-          </div>
-        </div>
-
-        {/* 📏 المساحة والغرف والحمامات */}
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block font-medium mb-1">المساحة (م²)</label>
-            <Input
-              type="number"
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">عدد الغرف</label>
-            <Input
-              type="number"
-              value={bedrooms}
-              onChange={(e) => setBedrooms(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">عدد الحمامات</label>
-            <Input
-              type="number"
-              value={bathrooms}
-              onChange={(e) => setBathrooms(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* ☎️ رقم الهاتف */}
-        <div>
-          <label className="block font-medium mb-1">رقم الهاتف</label>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </div>
-
-        {/* 🖼️ الصور */}
-        <div>
-          <label className="block font-medium mb-1">الصور</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageUpload}
-            className="mb-3"
-          />
-          <div className="grid grid-cols-3 gap-3">
+          <label className="block font-semibold mb-2">📸 الصور الحالية:</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {images.map((url, i) => (
-              <div key={i} className="relative group">
+              <div key={i} className="relative">
                 <img
                   src={url}
-                  alt={`صورة ${i + 1}`}
+                  alt={`صورة-${i}`}
                   className="w-full h-32 object-cover rounded"
                 />
                 <button
-                  onClick={() => handleRemoveImage(url)}
-                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                  onClick={() => handleDeleteImage(url)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-2 py-1 text-xs"
                 >
-                  ❌
+                  ✕
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* زر الحفظ */}
-        <Button
-          onClick={handleUpdate}
-          disabled={updating}
-          className="bg-blue-600 hover:bg-blue-700 text-white mt-4"
-        >
-          {updating ? "جارٍ الحفظ..." : "حفظ التعديلات"}
-        </Button>
+        <div>
+          <label className="block font-semibold mb-2 mt-4">
+            ➕ رفع صور جديدة:
+          </label>
+          <input
+            type="file"
+            multiple
+            onChange={handleImageChange}
+            className="border p-2 w-full rounded"
+          />
+          <button
+            onClick={handleImageUpload}
+            disabled={loading}
+            className="mt-2 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          >
+            {loading ? "⏳ جاري الرفع..." : "رفع الصور"}
+          </button>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={handleSave}
+            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+            disabled={loading}
+          >
+            💾 حفظ التعديلات
+          </button>
+
+          <button
+            onClick={handleDeleteProperty}
+            className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+          >
+            🗑️ حذف العقار
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -46,7 +46,7 @@ export default function PropertiesPage() {
         {properties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.map((property) => {
-              // ✅ معالجة الصور
+              // ✅ معالجة الصور بأمان
               let images: string[] = [];
               if (Array.isArray(property.images)) {
                 images = property.images;
@@ -59,21 +59,30 @@ export default function PropertiesPage() {
                 }
               }
 
+              // ✅ تحديد الصورة الأولى أو صورة افتراضية
               const firstImage =
-                images.length > 0 ? images[0] : "/no-image.png";
+                images && images.length > 0 && images[0]
+                  ? images[0]
+                  : "/no-image.png";
 
               return (
                 <div
                   key={property.id}
-                  className="border rounded-lg p-4 shadow hover:shadow-lg transition"
+                  className="border rounded-lg p-4 shadow hover:shadow-lg transition bg-white"
                 >
                   <div className="relative w-full h-48 mb-3">
-                    <Image
-                      src={firstImage}
-                      alt={property.title || "عقار"}
-                      fill
-                      className="object-cover rounded-md"
-                    />
+                    {firstImage ? (
+                      <Image
+                        src={firstImage}
+                        alt={property.title || "عقار"}
+                        fill
+                        className="object-cover rounded-md"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                        لا توجد صورة
+                      </div>
+                    )}
                   </div>
 
                   <h2 className="text-lg font-semibold mb-1">
