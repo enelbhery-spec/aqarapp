@@ -34,7 +34,7 @@ export default function EditPropertyPage() {
       }
 
       setProperty(data);
-      setImages(data.images || []);
+      setImages(Array.isArray(data.images) ? data.images : []);
     }
 
     if (propertyId) fetchProperty();

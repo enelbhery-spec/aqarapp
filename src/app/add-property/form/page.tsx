@@ -347,9 +347,9 @@ export default function AddPropertyPage() {
                     onChange={handleChange}
                     className="w-full border rounded px-3 py-2"
                   >
-                    <option value="available">متاح</option>
-                    <option value="sold">مباع</option>
-                    <option value="rented">مؤجر</option>
+                    <option value="available"></option>
+                    <option value="sold">للايجار</option>
+                    <option value="rented">للبيع</option>
                   </select>
                 </div>
               </div>
