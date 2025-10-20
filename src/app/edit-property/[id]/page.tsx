@@ -12,7 +12,7 @@ const supabase = createClient(
 export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
-  const propertyId = params.id as string;
+  const propertyId = params?.id as string | undefined;
 
   const [property, setProperty] = useState<any>(null);
   const [images, setImages] = useState<string[]>([]);
@@ -21,30 +21,41 @@ export default function EditPropertyPage() {
 
   // ✅ جلب بيانات العقار الحالي
   useEffect(() => {
+    if (!propertyId) return;
+
     async function fetchProperty() {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("id", propertyId)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("properties")
+          .select("*")
+          .eq("id", propertyId)
+          .single();
 
-      if (error) {
-        console.error("❌ خطأ أثناء جلب العقار:", error.message);
-        return;
+        if (error) {
+          console.error("❌ خطأ أثناء جلب العقار:", error.message);
+          return;
+        }
+
+        // ✅ تأكد أن images دايمًا Array
+        const imgs = Array.isArray(data.images)
+          ? data.images
+          : typeof data.images === "string"
+          ? JSON.parse(data.images || "[]")
+          : [];
+
+        setProperty(data);
+        setImages(imgs);
+      } catch (err) {
+        console.error("⚠️ خطأ غير متوقع أثناء الجلب:", err);
       }
-
-      setProperty(data);
-      setImages(Array.isArray(data.images) ? data.images : []);
     }
 
-    if (propertyId) fetchProperty();
+    fetchProperty();
   }, [propertyId]);
 
   // ✅ اختيار الصور الجديدة
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) {
-      setNewFiles(e.target.files);
-    }
+    if (e.target.files?.length) setNewFiles(e.target.files);
   };
 
   // ✅ رفع الصور دفعة واحدة
@@ -52,106 +63,119 @@ export default function EditPropertyPage() {
     if (!newFiles || !propertyId) return;
     setLoading(true);
 
-    const uploadPromises = Array.from(newFiles).map(async (file) => {
-      const fileName = `${Date.now()}-${file.name}`;
-      const filePath = `properties/${propertyId}/${fileName}`;
+    try {
+      const uploadPromises = Array.from(newFiles).map(async (file) => {
+        const fileName = `${Date.now()}-${file.name}`;
+        const filePath = `properties/${propertyId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("property-images")
-        .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from("property-images")
+          .upload(filePath, file);
 
-      if (uploadError) {
-        console.error("❌ خطأ في رفع الصورة:", uploadError.message);
-        return null;
+        if (uploadError) {
+          console.error("❌ خطأ في رفع الصورة:", uploadError.message);
+          return null;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from("property-images")
+          .getPublicUrl(filePath);
+
+        return publicUrlData?.publicUrl || null;
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const validUrls = results.filter((url): url is string => !!url);
+
+      if (validUrls.length > 0) {
+        const updatedImages = [...images, ...validUrls];
+        setImages(updatedImages);
+
+        await supabase
+          .from("properties")
+          .update({ images: updatedImages })
+          .eq("id", propertyId);
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from("property-images")
-        .getPublicUrl(filePath);
+      setNewFiles(null);
+    } catch (err) {
+      console.error("⚠️ خطأ أثناء رفع الصور:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      return publicUrlData?.publicUrl || null;
-    });
+  // ✅ حذف صورة واحدة
+  const handleDeleteImage = async (url: string) => {
+    try {
+      const path = url.split("/property-images/")[1];
+      if (!path) return;
 
-    const results = await Promise.all(uploadPromises);
-    const validUrls = results.filter((url): url is string => !!url);
+      await supabase.storage.from("property-images").remove([path]);
 
-    if (validUrls.length > 0) {
-      const updatedImages = [...images, ...validUrls];
+      const updatedImages = images.filter((img) => img !== url);
       setImages(updatedImages);
 
       await supabase
         .from("properties")
         .update({ images: updatedImages })
         .eq("id", propertyId);
+    } catch (err) {
+      console.error("⚠️ خطأ أثناء حذف الصورة:", err);
     }
-
-    setNewFiles(null);
-    setLoading(false);
-  };
-
-  // ✅ حذف صورة واحدة
-  const handleDeleteImage = async (url: string) => {
-    const path = url.split("/property-images/")[1];
-    if (!path) return;
-
-    await supabase.storage.from("property-images").remove([path]);
-
-    const updatedImages = images.filter((img) => img !== url);
-    setImages(updatedImages);
-
-    await supabase
-      .from("properties")
-      .update({ images: updatedImages })
-      .eq("id", propertyId);
   };
 
   // ✅ حذف العقار بالكامل
   const handleDeleteProperty = async () => {
     if (!confirm("هل أنت متأكد من حذف هذا العقار؟")) return;
 
-    // حذف كل الصور من التخزين
-    const paths = images
-      .map((url) => url.split("/property-images/")[1])
-      .filter(Boolean);
+    try {
+      const paths = images
+        .map((url) => url.split("/property-images/")[1])
+        .filter(Boolean);
 
-    if (paths.length > 0) {
-      await supabase.storage.from("property-images").remove(paths);
+      if (paths.length > 0) {
+        await supabase.storage.from("property-images").remove(paths);
+      }
+
+      await supabase.from("properties").delete().eq("id", propertyId);
+      alert("✅ تم حذف العقار بنجاح");
+      router.replace("/dashboard");
+    } catch (err) {
+      console.error("⚠️ خطأ أثناء حذف العقار:", err);
     }
-
-    // حذف العقار من قاعدة البيانات
-    await supabase.from("properties").delete().eq("id", propertyId);
-
-    alert("✅ تم حذف العقار بنجاح");
-    router.replace("/dashboard");
   };
 
-  // ✅ حفظ التعديلات على بيانات العقار
+  // ✅ حفظ التعديلات
   const handleSave = async () => {
-    if (!property) return;
+    if (!property || !propertyId) return;
     setLoading(true);
 
-    const { error } = await supabase
-      .from("properties")
-      .update({
-        title: property.title,
-        description: property.description,
-        price: property.price,
-        location: property.location,
-        images,
-      })
-      .eq("id", propertyId);
+    try {
+      const { error } = await supabase
+        .from("properties")
+        .update({
+          title: property.title,
+          description: property.description,
+          price: property.price,
+          location: property.location,
+          images,
+        })
+        .eq("id", propertyId);
 
-    setLoading(false);
+      if (error) throw error;
 
-    if (error) {
-      alert("❌ حدث خطأ أثناء الحفظ");
-      console.error(error);
-    } else {
       alert("✅ تم حفظ التعديلات بنجاح");
+    } catch (err) {
+      console.error("❌ خطأ أثناء الحفظ:", err);
+      alert("حدث خطأ أثناء الحفظ");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!property) return <div className="p-6">⏳ جاري تحميل بيانات العقار...</div>;
+  if (!property)
+    return <div className="p-6">⏳ جاري تحميل بيانات العقار...</div>;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -195,27 +219,33 @@ export default function EditPropertyPage() {
           className="border p-2 rounded"
         />
 
+        {/* ✅ عرض الصور الحالية */}
         <div>
           <label className="block font-semibold mb-2">📸 الصور الحالية:</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {images.map((url, i) => (
-              <div key={i} className="relative">
-                <img
-                  src={url}
-                  alt={`صورة-${i}`}
-                  className="w-full h-32 object-cover rounded"
-                />
-                <button
-                  onClick={() => handleDeleteImage(url)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-2 py-1 text-xs"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
+          {images.length === 0 ? (
+            <p className="text-gray-500">لا توجد صور مرفوعة.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {images.map((url, i) => (
+                <div key={i} className="relative">
+                  <img
+                    src={url}
+                    alt={`صورة-${i}`}
+                    className="w-full h-32 object-cover rounded"
+                  />
+                  <button
+                    onClick={() => handleDeleteImage(url)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-2 py-1 text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
+        {/* ✅ رفع صور جديدة */}
         <div>
           <label className="block font-semibold mb-2 mt-4">
             ➕ رفع صور جديدة:
