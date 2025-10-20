@@ -12,9 +12,9 @@ export function Footer() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground">من نحن</a>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground">اتصل بنا</a>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground">سياسة الخصوصية</a>
+            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground"></a>
+            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground"></a>
+            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground"></a>
         </div>
       </div>
     </footer>

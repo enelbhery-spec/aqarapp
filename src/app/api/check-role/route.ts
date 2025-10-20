@@ -21,16 +21,15 @@ export async function GET(req: Request) {
       { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseAuth.auth.getUser();
+    // ✅ الإصلاح هنا
+    const { data, error: userError } = await supabaseAuth.auth.getUser();
+    const user = data?.user;
 
     if (userError || !user) {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    const { data: roleData, error } = await supabase
       .from("users")
       .select("role")
       .eq("id", user.id)
@@ -40,7 +39,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ role: data?.role ?? null });
+    return NextResponse.json({ role: roleData?.role ?? null });
   } catch (err: any) {
     return NextResponse.json({ error: err.message ?? "Unknown error" }, { status: 500 });
   }
