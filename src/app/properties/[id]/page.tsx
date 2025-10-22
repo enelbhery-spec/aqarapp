@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Image from "next/image";
-import { MapPin, Phone, Bath, BedDouble, Ruler } from "lucide-react";
+import { MapPin, Phone, Bath, BedDouble, Ruler, Share2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
@@ -68,10 +68,16 @@ export default function PropertyDetails() {
     }
   })();
 
-  const whatsappNumber = property.phone?.replace(/^0/, "+20"); // تعديل الرقم لواتساب الدولي
+  const whatsappNumber = property.phone?.replace(/^0/, "+20");
   const whatsappLink = whatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=مرحبًا، أنا مهتم بعقار "${property.title}"`
     : "#";
+
+  // ✅ رابط المشاركة على فيسبوك
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+  const facebookShareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+    currentUrl
+  )}`;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -154,17 +160,32 @@ export default function PropertyDetails() {
               </p>
             )}
 
-            {/* ✅ زر الاتصال عبر واتساب */}
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3 rounded-lg">
-                اتصل بالمعلن عبر واتساب
-              </Button>
-            </a>
+            {/* ✅ الأزرار */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3 rounded-lg">
+                  اتصل بالمعلن عبر واتساب
+                </Button>
+              </a>
+
+              {/* ✅ زر المشاركة على فيسبوك */}
+              <a
+                href={facebookShareLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3 rounded-lg flex items-center justify-center gap-2">
+                  <Share2 className="w-5 h-5" />
+                  مشاركة على فيسبوك
+                </Button>
+              </a>
+            </div>
           </div>
         </div>
       </main>
