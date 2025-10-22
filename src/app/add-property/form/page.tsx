@@ -334,8 +334,8 @@ export default function AddPropertyPage() {
                     <option value="">اختر النوع</option>
                     <option value="apartment">شقة</option>
                     <option value="villa">فيلا</option>
-                    <option value="office">مكتب</option>
-                    <option value="land">أرض</option>
+                    <option value="office">محل تجارى</option>
+                    <option value="land">بيت</option>
                   </select>
                 </div>
 

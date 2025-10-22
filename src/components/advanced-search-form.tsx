@@ -127,7 +127,7 @@ export function AdvancedSearchForm() {
                           <SelectItem value="all">الكل</SelectItem>
                           <SelectItem value="apartment">شقة</SelectItem>
                           <SelectItem value="villa">فيلا</SelectItem>
-                          <SelectItem value="land">أرض</SelectItem>
+                          <SelectItem value="land">بيت</SelectItem>
                           <SelectItem value="shop">محل تجاري</SelectItem>
                         </SelectContent>
                       </Select>
