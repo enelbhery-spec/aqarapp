@@ -263,7 +263,7 @@ export function AdvancedSearchForm() {
 
                   {/* 🔘 زر تفاصيل العقار */}
                   <Button
-                    onClick={() => router.push(`/properties/${item.id}`)}
+                    onClick={() => router.push(`/properties/${item.slug}`)} // ✅ استخدم slug بدل id
                     className="mt-3"
                   >
                     تفاصيل العقار
