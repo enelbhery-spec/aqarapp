@@ -24,6 +24,7 @@ export function AddPropertyForm() {
   // ✅ رفع الصور بعد ضغطها
   const uploadImages = async (files: FileList) => {
     const uploadedUrls: string[] = [];
+    
 
     for (const file of Array.from(files)) {
       try {

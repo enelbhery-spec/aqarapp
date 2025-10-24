@@ -36,7 +36,6 @@ export default function EditPropertyPage() {
           return;
         }
 
-        // ✅ تأكد أن images دايمًا Array
         const imgs = Array.isArray(data.images)
           ? data.images
           : typeof data.images === "string"
@@ -58,7 +57,7 @@ export default function EditPropertyPage() {
     if (e.target.files?.length) setNewFiles(e.target.files);
   };
 
-  // ✅ رفع الصور دفعة واحدة
+  // ✅ رفع الصور الجديدة
   const handleImageUpload = async () => {
     if (!newFiles || !propertyId) return;
     setLoading(true);
@@ -159,6 +158,10 @@ export default function EditPropertyPage() {
           description: property.description,
           price: property.price,
           location: property.location,
+          phone: property.phone,
+          area: property.area,
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
           images,
         })
         .eq("id", propertyId);
@@ -179,7 +182,7 @@ export default function EditPropertyPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">تعديل العقار</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">✏️ تعديل العقار</h1>
 
       <div className="flex flex-col gap-4">
         <input
@@ -205,9 +208,51 @@ export default function EditPropertyPage() {
           onChange={(e) =>
             setProperty({ ...property, price: Number(e.target.value) })
           }
-          placeholder="السعر"
+          placeholder="💰 السعر"
           className="border p-2 rounded"
         />
+
+        <input
+          type="text"
+          value={property.phone || ""}
+          onChange={(e) =>
+            setProperty({ ...property, phone: e.target.value })
+          }
+          placeholder="📞 رقم الهاتف"
+          className="border p-2 rounded"
+        />
+
+        <input
+          type="number"
+          value={property.area || ""}
+          onChange={(e) =>
+            setProperty({ ...property, area: Number(e.target.value) })
+          }
+          placeholder="📐 المساحة بالمتر"
+          className="border p-2 rounded"
+        />
+
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            type="number"
+            value={property.bedrooms || ""}
+            onChange={(e) =>
+              setProperty({ ...property, bedrooms: Number(e.target.value) })
+            }
+            placeholder="🛏️ عدد الغرف"
+            className="border p-2 rounded"
+          />
+
+          <input
+            type="number"
+            value={property.bathrooms || ""}
+            onChange={(e) =>
+              setProperty({ ...property, bathrooms: Number(e.target.value) })
+            }
+            placeholder="🚿 عدد الحمامات"
+            className="border p-2 rounded"
+          />
+        </div>
 
         <input
           type="text"
@@ -215,7 +260,7 @@ export default function EditPropertyPage() {
           onChange={(e) =>
             setProperty({ ...property, location: e.target.value })
           }
-          placeholder="الموقع"
+          placeholder="📍 الموقع"
           className="border p-2 rounded"
         />
 
@@ -227,15 +272,15 @@ export default function EditPropertyPage() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {images.map((url, i) => (
-                <div key={i} className="relative">
+                <div key={i} className="relative group">
                   <img
                     src={url}
                     alt={`صورة-${i}`}
-                    className="w-full h-32 object-cover rounded"
+                    className="w-full h-32 object-cover rounded shadow-sm"
                   />
                   <button
                     onClick={() => handleDeleteImage(url)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-2 py-1 text-xs"
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition"
                   >
                     ✕
                   </button>
@@ -265,7 +310,8 @@ export default function EditPropertyPage() {
           </button>
         </div>
 
-        <div className="flex gap-3 mt-6">
+        {/* ✅ الأزرار */}
+        <div className="flex gap-3 mt-6 justify-center">
           <button
             onClick={handleSave}
             className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
