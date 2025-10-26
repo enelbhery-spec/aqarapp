@@ -17,6 +17,3 @@ Disallow: /dashboard/
 
 # رابط خريطة الموقع
 Sitemap: https://aqaratapp.netlify.app/sitemap.xml
-
-# معلومات إضافية اختيارية
-Host: aqaratapp.netlify.app
