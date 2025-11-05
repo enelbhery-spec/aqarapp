@@ -59,6 +59,12 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
+        {/* ✅ كود AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4973672854580770"
+          crossOrigin="anonymous"
+        ></script>
         {/* خطوط الموقع */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -81,7 +87,9 @@ export default function RootLayout({
 
       <body className="font-body antialiased">
         {children}
+        
         <Toaster />
+        
       </body>
     </html>
   );

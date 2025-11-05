@@ -66,7 +66,7 @@ export default function ContactPage() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="example@email.com"
+              placeholder="en.elbhery@gmail.com"
               required
             />
           </div>
