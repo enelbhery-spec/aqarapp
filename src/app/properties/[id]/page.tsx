@@ -1,5 +1,5 @@
 "use client";
-export const runtime = 'edge';
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -90,7 +90,7 @@ export default function PropertyDetails() {
       <Header />
 
       <main className="container py-10 max-w-5xl mx-auto">
-        {/* ✅ صور العقار - Swiper */}
+        {/* ✅ صور العقار */}
         <div className="mb-8 rounded-2xl overflow-hidden shadow-lg border border-gray-200">
           <Swiper
             modules={[Pagination, Navigation]}

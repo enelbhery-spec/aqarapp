@@ -1,19 +1,22 @@
 export const runtime = 'edge';
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // 🧩 إنشاء عميل Supabase عادي
+    // 🧩 إنشاء عميل Supabase أساسي
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    // 🧠 استخراج التوكن من الكوكيز الخاصة بـ Supabase
-    const cookieStore = cookies();
-    const token = (await cookieStore).get("sb-access-token")?.value;
+    // 🧠 قراءة الكوكيز من الهيدر (بديل cookies() في edge)
+    const cookieHeader = request.headers.get("cookie") || "";
+    const token = cookieHeader
+      .split("; ")
+      .find((c) => c.startsWith("sb-access-token="))
+      ?.split("=")[1];
 
     if (!token) {
       return NextResponse.json(
@@ -22,7 +25,7 @@ export async function GET() {
       );
     }
 
-    // ✅ إنشاء عميل مصادقة بناءً على الجلسة الحالية
+    // ✅ إنشاء عميل Supabase مع جلسة المصادقة
     const supabaseAuth = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
