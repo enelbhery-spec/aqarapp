@@ -13,6 +13,14 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
 
+  // ✅ تقليل حجم ملفات build
+  productionBrowserSourceMaps: false, // يمنع توليد ملفات ضخمة
+  compress: true, // تفعيل الضغط لتقليل الحجم
+  webpack: (config) => {
+    config.optimization.minimize = true; // ضغط الكود النهائي
+    return config;
+  },
+
   // تضمين المتغيرات البيئية أثناء البناء
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
