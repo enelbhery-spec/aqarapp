@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev -p 9002",
     "build": "npx @cloudflare/next-on-pages build",
+    "prebuild": "node scripts/compress-images.js",
     "start": "next start -p 9002"
+    
   },
   "optionalDependencies": {
     "@next/swc-linux-x64-gnu": "15.5.6",
