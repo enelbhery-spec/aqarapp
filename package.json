@@ -1,12 +1,12 @@
 {
+  "type": "module",
   "name": "aqarapp",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev ",
+    "dev": "next dev",
     "build": "next build",
-    "start": "next start "
-    
+    "start": "next start"
   },
   "optionalDependencies": {
     "@next/swc-linux-x64-gnu": "15.5.6",

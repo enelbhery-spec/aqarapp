@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ✅ تصدير ثابت (Static Export) ليعمل مع Cloudflare Pages
+  output: 'standalone'
+,
+
   // ✅ إعدادات الصور (Supabase Storage)
   images: {
+    unoptimized: true, // ضروري عند النشر على Cloudflare Pages
     remotePatterns: [
       {
         protocol: "https",
@@ -20,15 +25,6 @@ const nextConfig = {
   webpack: (config) => {
     config.optimization.minimize = true; // ضغط الكود النهائي
     return config;
-  },
-
-  // ✅ تحسين استيراد المكتبات الثقيلة (اختياري)
-  experimental: {
-    modularizeImports: {
-      lodash: {
-        transform: "lodash/{{member}}",
-      },
-    },
   },
 
   // ✅ تضمين المتغيرات البيئية أثناء البناء
