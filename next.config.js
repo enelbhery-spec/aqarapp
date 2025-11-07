@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ✅ إعدادات الصور (Supabase Storage)
   images: {
     remotePatterns: [
       {
@@ -13,24 +14,33 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
 
-  // ✅ تقليل حجم ملفات build
-  productionBrowserSourceMaps: false, // يمنع توليد ملفات ضخمة
-  compress: true, // تفعيل الضغط لتقليل الحجم
+  // ✅ تحسين حجم البناء (build optimization)
+  compress: true,
+  productionBrowserSourceMaps: false, // يمنع ملفات ضخمة أثناء البناء
   webpack: (config) => {
     config.optimization.minimize = true; // ضغط الكود النهائي
     return config;
   },
 
-  // تضمين المتغيرات البيئية أثناء البناء
+  // ✅ تحسين استيراد المكتبات الثقيلة (اختياري)
+  experimental: {
+    modularizeImports: {
+      lodash: {
+        transform: "lodash/{{member}}",
+      },
+    },
+  },
+
+  // ✅ تضمين المتغيرات البيئية أثناء البناء
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
 
+  // ✅ تجاوز أخطاء Typescript و ESLint أثناء البناء
   typescript: {
     ignoreBuildErrors: true,
   },
-
   eslint: {
     ignoreDuringBuilds: true,
   },
