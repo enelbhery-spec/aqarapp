@@ -17,10 +17,9 @@ export default function AddPropertyForm() {
     area: "",
     bedrooms: "",
     bathrooms: "",
-    halls: "",
     phone: "",
     description: "",
-    images: [],
+    images: [] as File[],
   });
 
   const handleChange = (e: any) => {
@@ -29,7 +28,7 @@ export default function AddPropertyForm() {
 
   const handleImages = (e: any) => {
     const files = Array.from(e.target.files);
-    setForm({ ...form, images: files });
+    setForm({ ...form, images: files as File[] });
   };
 
   const handleSubmit = async () => {
@@ -41,38 +40,51 @@ export default function AddPropertyForm() {
       return;
     }
 
-    // رفع الصور
-    const uploadedImages: string[] = [];
+    try {
+      // رفع الصور
+      const uploadedImages: string[] = [];
 
-    for (const file of form.images as any) {
-      const fileName = `${Date.now()}-${file.name}`;
+      for (const file of form.images) {
+        const fileName = `${Date.now()}-${file.name}`;
 
-      const { data, error } = await supabase.storage
-        .from("properties")
-        .upload(fileName, file);
+        const { error: uploadError } = await supabase.storage
+          .from("properties")
+          .upload(fileName, file);
 
-      if (!error) {
+        if (uploadError) {
+          console.error("❌ خطأ رفع الصورة:", uploadError);
+          alert("خطأ عند رفع الصورة: " + uploadError.message);
+          return;
+        }
+
         const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/properties/${fileName}`;
         uploadedImages.push(url);
       }
+
+      // حفظ البيانات في جدول properties
+      const { error } = await supabase.from("properties").insert({
+        title: form.title,
+        price: Number(form.price),
+        area: Number(form.area),
+        bedrooms: Number(form.bedrooms),
+        bathrooms: Number(form.bathrooms),
+        phone: form.phone,
+        description: form.description,
+        images: uploadedImages,
+        user_id: user.id,
+      });
+
+      if (error) {
+        console.error("❌ خطأ Supabase:", error);
+        alert("حدث خطأ أثناء الإضافة: " + error.message);
+      } else {
+        alert("تم إضافة العقار بنجاح 🎉");
+      }
+
+    } catch (err: any) {
+      console.error("🔥 خطأ غير متوقع:", err);
+      alert("حدث خطأ غير متوقع");
     }
-
-    // حفظ البيانات في جدول properties
-    const { error } = await supabase.from("properties").insert({
-      title: form.title,
-      price: form.price,
-      area: form.area,
-      bedrooms: form.bedrooms,
-      bathrooms: form.bathrooms,
-      halls: form.halls,
-      phone: form.phone,
-      description: form.description,
-      images: uploadedImages,
-      user_id: user.id,
-    });
-
-    if (error) alert("حدث خطأ أثناء الإضافة");
-    else alert("تم إضافة العقار بنجاح 🎉");
   };
 
   return (
@@ -104,10 +116,7 @@ export default function AddPropertyForm() {
           <input name="bathrooms" type="number" placeholder="عدد الحمامات"
             onChange={handleChange} className="input" />
 
-          <input name="halls" type="number" placeholder="عدد الصالات"
-            onChange={handleChange} className="input" />
-
-          <input name="phone" type="text" placeholder="رقم الهاتف"
+                    <input name="phone" type="text" placeholder="رقم الهاتف"
             onChange={handleChange} className="input" />
 
           <textarea name="description" placeholder="وصف العقار"
