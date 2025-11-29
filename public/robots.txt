@@ -16,4 +16,4 @@ Disallow: /admin/
 Disallow: /dashboard/
 
 # رابط خريطة الموقع
-Sitemap: 
+Sitemap: https://aqaratapp.netlify.app/api/sitemap.xml

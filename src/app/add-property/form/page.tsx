@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Header from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -10,131 +9,74 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function AddPropertyForm() {
-  const [form, setForm] = useState({
-    title: "",
-    price: "",
-    area: "",
-    bedrooms: "",
-    bathrooms: "",
-    phone: "",
-    description: "",
-    images: [] as File[],
-  });
+export default function PropertyDetails() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  const handleChange = (e: any) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [property, setProperty] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleImages = (e: any) => {
-    const files = Array.from(e.target.files);
-    setForm({ ...form, images: files as File[] });
-  };
+  useEffect(() => {
+    if (!id) return;
 
-  const handleSubmit = async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData?.user;
+    const loadProperty = async () => {
+      setLoading(true);
 
-    if (!user) {
-      alert("يجب تسجيل الدخول أولاً");
-      return;
-    }
-
-    try {
-      // رفع الصور
-      const uploadedImages: string[] = [];
-
-      for (const file of form.images) {
-        const fileName = `${Date.now()}-${file.name}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("properties")
-          .upload(fileName, file);
-
-        if (uploadError) {
-          console.error("❌ خطأ رفع الصورة:", uploadError);
-          alert("خطأ عند رفع الصورة: " + uploadError.message);
-          return;
-        }
-
-        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/properties/${fileName}`;
-        uploadedImages.push(url);
-      }
-
-      // حفظ البيانات في جدول properties
-      const { error } = await supabase.from("properties").insert({
-        title: form.title,
-        price: Number(form.price),
-        area: Number(form.area),
-        bedrooms: Number(form.bedrooms),
-        bathrooms: Number(form.bathrooms),
-        phone: form.phone,
-        description: form.description,
-        images: uploadedImages,
-        user_id: user.id,
-      });
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .eq("id", id)
+        .single();
 
       if (error) {
-        console.error("❌ خطأ Supabase:", error);
-        alert("حدث خطأ أثناء الإضافة: " + error.message);
-      } else {
-        alert("تم إضافة العقار بنجاح 🎉");
+        console.error("❌ خطأ في جلب بيانات العقار:", error);
+        setLoading(false);
+        return;
       }
 
-    } catch (err: any) {
-      console.error("🔥 خطأ غير متوقع:", err);
-      alert("حدث خطأ غير متوقع");
-    }
-  };
+      setProperty(data);
+      setLoading(false);
+    };
+
+    loadProperty();
+  }, [id]);
+
+  if (loading) return <p style={{ padding: 20 }}>جارٍ التحميل...</p>;
+
+  if (!property) return <p style={{ padding: 20 }}>لم يتم العثور على العقار</p>;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div style={{ padding: 20, direction: "rtl", textAlign: "right" }}>
+      <h1>تفاصيل العقار</h1>
 
-      {/* 🔥 هيدر ثابت */}
-      <div className="sticky top-0 z-50 bg-white shadow">
-        <Header />
-      </div>
+      <h2>{property.title}</h2>
+      <p>{property.description}</p>
+      <p>السعر: {property.price} جنيه</p>
+      <p>المساحة: {property.area} متر</p>
 
-      <main className="container mx-auto py-10 max-w-3xl">
+      {/* 🔥 تمت إضافة الموقع هنا */}
+      <p>الموقع: {property.location || "غير مسجل"}</p>
 
-        <h2 className="text-3xl font-bold mb-8">نموذج إضافة عقار</h2>
-
-        <div className="grid gap-5">
-
-          <input name="title" type="text" placeholder="عنوان العقار"
-            onChange={handleChange} className="input" />
-
-          <input name="price" type="number" placeholder="السعر"
-            onChange={handleChange} className="input" />
-
-          <input name="area" type="number" placeholder="المساحة بالمتر"
-            onChange={handleChange} className="input" />
-
-          <input name="bedrooms" type="number" placeholder="عدد غرف النوم"
-            onChange={handleChange} className="input" />
-
-          <input name="bathrooms" type="number" placeholder="عدد الحمامات"
-            onChange={handleChange} className="input" />
-
-                    <input name="phone" type="text" placeholder="رقم الهاتف"
-            onChange={handleChange} className="input" />
-
-          <textarea name="description" placeholder="وصف العقار"
-            onChange={handleChange} className="input h-28" />
-
-          <input type="file" multiple onChange={handleImages} className="input" />
-
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
-          >
-            حفظ العقار
-          </button>
-
+      <h3>الصور:</h3>
+      {property.images?.length > 0 ? (
+        <div style={{ display: "flex", gap: 10 }}>
+          {property.images.map((img: string, index: number) => (
+            <img
+              key={index}
+              src={img}
+              alt="صورة العقار"
+              style={{
+                width: 200,
+                height: 150,
+                objectFit: "cover",
+                borderRadius: 8,
+              }}
+            />
+          ))}
         </div>
-      </main>
-
-      <Footer />
+      ) : (
+        <p>لا توجد صور</p>
+      )}
     </div>
   );
 }
