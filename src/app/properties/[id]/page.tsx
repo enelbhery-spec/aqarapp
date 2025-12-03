@@ -124,17 +124,26 @@ export default function PropertyDetails() {
             <MapPin className="w-5 h-5 text-blue-600" />
             <span>{property.location || "غير محدد"}</span>
           </div>
+
           <div className="flex items-center gap-2">
             <Ruler className="w-5 h-5 text-green-600" />
             <span>{property.area ? `${property.area} م²` : "غير محدد"}</span>
           </div>
+
           <div className="flex items-center gap-2">
             <BedDouble className="w-5 h-5 text-orange-600" />
             <span>{property.bedrooms || 0} غرف</span>
           </div>
+
           <div className="flex items-center gap-2">
             <Bath className="w-5 h-5 text-purple-600" />
             <span>{property.bathrooms || 0} حمام</span>
+          </div>
+
+          {/* ✅ رقم التليفون */}
+          <div className="flex items-center gap-2">
+            <Phone className="w-5 h-5 text-green-600" />
+            <span>{property.phone || "غير متوفر"}</span>
           </div>
         </div>
 
