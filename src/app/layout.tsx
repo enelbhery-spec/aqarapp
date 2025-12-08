@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "aqarapp | عقارات حدائق أكتوبر",
     description:
       "ابحث عن أفضل الشقق، الفلل، والمحلات في حدائق أكتوبر عبر تطبيق aqarapp — تجربة سهلة وسريعة للعثور على عقارك المثالي.",
-    url: "https://aqarapp.netlify.app",
+    url: "https://aqarapp-git-vercel-react-flight-97b910-enelbhery-specs-projects.vercel.app/",
     siteName: "aqarapp",
     images: [
       {
@@ -49,6 +49,12 @@ export const metadata: Metadata = {
     icon: "/logo.png",
     apple: "/icons/icon-192x192.png",
   },
+
+  // ✅ كود Google Site Verification الصحيح
+  other: {
+    "google-site-verification":
+      "7XY4QFlcbO13HsbJ3M-4Pl1l9A4Pbbe-GltnYncvINA",
+  },
 };
 
 export default function RootLayout({
@@ -59,12 +65,13 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
-        {/* ✅ كود AdSense */}
+        {/* كود AdSense */}
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4973672854580770"
           crossOrigin="anonymous"
         ></script>
+
         {/* خطوط الموقع */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -82,14 +89,11 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="aqarapp" />
-        <meta name="google-adsense-account" content="ca-pub-4973672854580770"></meta>
       </head>
 
       <body className="font-body antialiased">
         {children}
-        
         <Toaster />
-        
       </body>
     </html>
   );
