@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "aqarapp | عقارات حدائق أكتوبر",
     description:
       "ابحث عن أفضل الشقق، الفلل، والمحلات في حدائق أكتوبر عبر تطبيق aqarapp — تجربة سهلة وسريعة للعثور على عقارك المثالي.",
-    url: "https://aqarapp-git-vercel-react-flight-97b910-enelbhery-specs-projects.vercel.app/",
+    url: "https://aqarapp-1794n75lv-enelbhery-specs-projects.vercel.app/",
     siteName: "aqarapp",
     images: [
       {
