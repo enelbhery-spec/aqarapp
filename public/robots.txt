@@ -1,6 +1,11 @@
 User-agent: *
 Allow: /
 
+Allow: /images/
+Allow: /assets/
+Allow: /_next/static/
+Allow: /_next/image/
+
 Disallow: /api/
 Disallow: /admin/
 Disallow: /dashboard/
