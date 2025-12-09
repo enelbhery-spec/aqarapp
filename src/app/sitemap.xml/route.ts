@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 // رابط موقعك على Vercel
-const BASE_URL = "https://aqarapp-1794n75lv-enelbhery-specs-projects.vercel.app";
+const BASE_URL = "https://aqaratapp.netlify.app/";
 
 export async function GET() {
   const { data, error } = await supabase

@@ -21,7 +21,7 @@ export default function AddPropertyForm() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    // رفع الصور لو موجودة
+    // رفع الصور
     let uploadedImages: string[] = [];
 
     if (images && images.length > 0) {
@@ -42,26 +42,43 @@ export default function AddPropertyForm() {
       }
     }
 
-    const { error } = await supabase.from("properties").insert([
-      {
-        title,
-        price: Number(price),
-        area: Number(area),
-        bedrooms: Number(bedrooms),
-        bathrooms: Number(bathrooms),
-        phone,
-        description,
-        images: uploadedImages,
-      },
-    ]);
+    // حفظ العقار في Supabase
+    const { data, error } = await supabase
+      .from("properties")
+      .insert([
+        {
+          title,
+          price: Number(price),
+          area: Number(area),
+          bedrooms: Number(bedrooms),
+          bathrooms: Number(bathrooms),
+          phone,
+          description,
+          images: uploadedImages,
+        },
+      ])
+      .select();
 
     if (error) {
       alert("❌ حدث خطأ أثناء إضافة العقار");
       console.error(error);
-    } else {
-      alert("✔ تمت إضافة العقار بنجاح");
-      window.location.reload();
+      return;
     }
+
+    const propertyId = data[0].id;
+
+    // 🔥 إرسال البوست إلى فيسبوك تلقائيًا
+    await fetch("/api/facebook/post", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `🔥 عقار جديد في حدائق أكتوبر\n\n🏡 العنوان: ${title}\n💰 السعر: ${price}\n📐 المساحة: ${area} م²\n🛏 غرف النوم: ${bedrooms}\n🛁 الحمامات: ${bathrooms}\n📞 الهاتف: ${phone}\n\n📌 التفاصيل كاملة:\nhttps://aqarapp.netlify.app/properties/${propertyId}`,
+        imageUrl: uploadedImages[0] || null,
+      }),
+    });
+
+    alert("✔ تمت إضافة العقار وتم نشره تلقائيًا على فيسبوك");
+    window.location.reload();
   };
 
   return (
@@ -137,11 +154,7 @@ export default function AddPropertyForm() {
           style={{ ...inputStyle, height: "120px" }}
         />
 
-        <input
-          type="file"
-          multiple
-          onChange={(e) => setImages(e.target.files)}
-        />
+        <input type="file" multiple onChange={(e) => setImages(e.target.files)} />
 
         <button
           type="submit"

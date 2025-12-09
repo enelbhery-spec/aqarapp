@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   // ✅ كود Google Site Verification الصحيح
   other: {
     "google-site-verification":
-      "7XY4QFlcbO13HsbJ3M-4Pl1l9A4Pbbe-GltnYncvINA",
+"7XY4QFlcbO13HsbJ3M-4Pl1l9A4Pbbe-GltnYncvINA",
   },
 };
 
