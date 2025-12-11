@@ -21,9 +21,9 @@ export default function AddPropertyForm() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    // رفع الصور
     let uploadedImages: string[] = [];
 
+    // رفع الصور
     if (images && images.length > 0) {
       for (let i = 0; i < images.length; i++) {
         const file = images[i];
@@ -35,9 +35,10 @@ export default function AddPropertyForm() {
 
         if (!error)
           uploadedImages.push(
-            `https://${
-              process.env.NEXT_PUBLIC_SUPABASE_URL?.replace("https://", "")
-            }/storage/v1/object/public/properties/${fileName}`
+            `https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(
+              "https://",
+              ""
+            )}/storage/v1/object/public/properties/${fileName}`
           );
       }
     }
@@ -65,17 +66,28 @@ export default function AddPropertyForm() {
       return;
     }
 
+    // ID العقار الجديد
     const propertyId = data[0].id;
 
-    // 🔥 إرسال البوست إلى فيسبوك تلقائيًا
-    await fetch("/api/facebook/post", {
+    // 🔥 إرسال البوست إلى فيسبوك
+    await fetch("/api/publish-to-facebook", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message: `🔥 عقار جديد في حدائق أكتوبر\n\n🏡 العنوان: ${title}\n💰 السعر: ${price}\n📐 المساحة: ${area} م²\n🛏 غرف النوم: ${bedrooms}\n🛁 الحمامات: ${bathrooms}\n📞 الهاتف: ${phone}\n\n📌 التفاصيل كاملة:\nhttps://aqarapp.netlify.app/properties/${propertyId}`,
-        imageUrl: uploadedImages[0] || null,
+        title,
+        price,
+        area,
+        bedrooms,
+        bathrooms,
+        phone,
+        description,
+        image: uploadedImages[0] || null,
+        url: `https://aqarapp.netlify.app/properties/${propertyId}`,
       }),
-    });
+    })
+      .then((res) => res.json())
+      .then((data) => console.log("FACEBOOK RESPONSE:", data))
+      .catch((err) => console.error("FACEBOOK ERROR:", err));
 
     alert("✔ تمت إضافة العقار وتم نشره تلقائيًا على فيسبوك");
     window.location.reload();
