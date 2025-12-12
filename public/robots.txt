@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://aqaratapp.netlify.app/sitemap.xml

@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  turbopack: false,
-
   images: {
     remotePatterns: [
       {
@@ -10,6 +8,7 @@ const nextConfig = {
       },
     ],
   },
+  reactStrictMode: true,
 };
 
 module.exports = nextConfig;

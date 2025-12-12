@@ -1,30 +1,13 @@
 "use server";
 
-import { generatePersonalizedHeadline, PersonalizedHeadlineInput, PersonalizedHeadlineOutput } from "@/ai/flows/personalized-headline-variations";
-import { z } from "zod";
+// تم حذف جميع وظائف الذكاء الاصطناعي (AI Flows)
+// لأن مجلد /ai لم يعد موجوداً
 
-const PersonalizedHeadlineInputSchema = z.object({
-  userSegment: z.string(),
-  abTestResults: z.string(),
-  existingHeadline: z.string(),
-  numberOfVariations: z.number(),
-});
+// يمكنك إضافة أي Server Actions هنا لاحقًا إذا احتجت
 
-type PersonalizedHeadlineResult = PersonalizedHeadlineOutput & { error?: string };
-
-export async function getPersonalizedHeadlines(input: PersonalizedHeadlineInput): Promise<PersonalizedHeadlineResult> {
-    const parsedInput = PersonalizedHeadlineInputSchema.safeParse(input);
-
-    if (!parsedInput.success) {
-        return { headlineVariations: [], error: "Invalid input." };
-    }
-
-    try {
-        const result = await generatePersonalizedHeadline(parsedInput.data);
-        return result;
-    } catch (e) {
-        console.error(e);
-        const error = e instanceof Error ? e.message : "An unexpected error occurred.";
-        return { headlineVariations: [], error };
-    }
+export async function getPersonalizedHeadlines() {
+  return {
+    headlineVariations: [],
+    error: "AI service has been removed from the project.",
+  };
 }

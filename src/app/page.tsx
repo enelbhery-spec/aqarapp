@@ -22,6 +22,14 @@ export default function HomePage() {
     fetchFeatured();
   }, []);
 
+  // دالة البحث التي ترسل البيانات من نموذج البحث
+  const handleSearch = (data: any) => {
+    console.log("Searching with:", data);
+
+    // إعادة توجيه لصفحة نتائج البحث
+    window.location.href = `/properties?property_type=${data.property_type || ""}&location=${data.location || ""}`;
+  };
+
   // 🏠 أحدث العقارات
   const fetchLatest = async () => {
     const { data, error } = await supabase
@@ -51,15 +59,16 @@ export default function HomePage() {
       <main className="flex-1 py-12 md:py-20">
         <div className="container text-center">
           <h1 className="font-headline text-4xl md:text-5xl font-bold">
-            عقارات حدائق أكتوبر Online
+            عقارات  أكتوبر Online
           </h1>
 
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             اكتشف أحدث العقارات والفرص المميزة في حدائق أكتوبر.
           </p>
 
+          {/* نموذج البحث مع تمرير الدالة */}
           <div className="mt-10 max-w-4xl mx-auto">
-            <AdvancedSearchForm />
+            <AdvancedSearchForm onSearch={handleSearch} />
           </div>
 
           <div className="mt-10">
