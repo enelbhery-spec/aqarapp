@@ -7,52 +7,43 @@ const supabase = createClient(
 );
 
 export async function GET() {
-  const baseUrl = "https://aqarapp.vercel.app/";
-  // ⚠️ غيّرها إلى الدومين الحقيقي
+  const baseUrl = "https://aqarapp.vercel.app";
 
-  // 🔹 جلب كل العقارات (slug)
-  const { data: properties, error } = await supabase
+  const { data: properties } = await supabase
     .from("properties")
     .select("slug, updated_at");
 
-  if (error) {
-    console.error(error);
-  }
+  const urls = [
+    `
+    <url>
+      <loc>${baseUrl}</loc>
+      <lastmod>${new Date().toISOString()}</lastmod>
+      <priority>1.0</priority>
+    </url>
+    `,
+    `
+    <url>
+      <loc>${baseUrl}/properties</loc>
+      <lastmod>${new Date().toISOString()}</lastmod>
+      <priority>0.9</priority>
+    </url>
+    `,
+    ...(properties || []).map((p) => {
+      const safeSlug = encodeURIComponent(p.slug);
 
-  // 🔹 روابط ثابتة
-  const staticUrls = [
-    {
-      loc: `${baseUrl}/`,
-      lastmod: new Date().toISOString(),
-    },
-    {
-      loc: `${baseUrl}/properties`,
-      lastmod: new Date().toISOString(),
-    },
-  ];
+      return `
+      <url>
+        <loc>${baseUrl}/properties/${safeSlug}</loc>
+        <lastmod>${new Date(p.updated_at || Date.now()).toISOString()}</lastmod>
+        <priority>0.8</priority>
+      </url>
+      `;
+    }),
+  ].join("");
 
-  // 🔹 روابط العقارات
-  const propertyUrls =
-    properties?.map((item) => ({
-      loc: `${baseUrl}/properties/${item.slug}`,
-      lastmod: item.updated_at || new Date().toISOString(),
-    })) || [];
-
-  // 🔹 دمج كل الروابط
-  const allUrls = [...staticUrls, ...propertyUrls];
-
-  // 🔹 توليد XML
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allUrls
-  .map(
-    (url) => `
-  <url>
-    <loc>${url.loc}</loc>
-    <lastmod>${url.lastmod}</lastmod>
-  </url>`
-  )
-  .join("")}
+${urls}
 </urlset>`;
 
   return new NextResponse(sitemap, {
