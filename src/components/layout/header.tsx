@@ -53,11 +53,10 @@ export default function Header() {
               <ArrowLeft className="text-gray-600" size={22} />
             </button>
           )}
-          <Link href="/" className="text-lg font-bold text-blue-600">
-            🏠 عقاراتى  
+          <Link href="/" className="text-lg font-bold text-blck-600">
+            🏠 عقار اب ------ Aqar_app
           </Link>
         </div>
-
         {session ? (
           <nav className="flex items-center gap-4">
             <Link href="/my-properties" className="hover:text-blue-600">
@@ -70,7 +69,7 @@ export default function Header() {
         ) : (
           <nav>
             <Link href="/" className="hover:text-blue-600">
-              الرئيسية
+
             </Link>
           </nav>
         )}
