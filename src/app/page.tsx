@@ -1,199 +1,179 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Header from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function HomePage() {
-  const router = useRouter();
 
-  const [searchText, setSearchText] = useState("");
-  const [latest, setLatest] = useState<any[]>([]);
-  const [featured, setFeatured] = useState<any[]>([]);
-
-  useEffect(() => {
-    fetchLatest();
-    fetchFeatured();
-  }, []);
-
-  // 🔍 البحث بخانة واحدة
-  const handleSearch = () => {
-    if (!searchText.trim()) return;
-    router.push(`/properties?q=${encodeURIComponent(searchText)}`);
-  };
-
-  // 🏠 أحدث العقارات
-  const fetchLatest = async () => {
-    const { data, error } = await supabase
-      .from("properties")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(6);
-
-    if (!error && data) setLatest(data);
-  };
-
-  // ⭐ العقارات المميزة
-  const fetchFeatured = async () => {
-    const { data, error } = await supabase
-      .from("properties")
-      .select("*")
-      .order("price", { ascending: false })
-      .limit(3);
-
-    if (!error && data) setFeatured(data);
-  };
+export default async function Home() {
+    const { data: properties } = await supabase
+  .from("properties")
+  .select("id, title, price, location, images")
+  .eq("status", "approved")
+  .order("created_at", { ascending: false })
+  .limit(6);
 
   return (
-    <div className="flex flex-col min-h-screen bg-muted/20">
-      <Header />
+    <main className="bg-gray-50 text-gray-800">
 
-      <main className="flex-1">
+      {/* ================= HERO SECTION ================= */}
+<section className="bg-green-600 text-white py-20">
+  <div className="max-w-7xl mx-auto px-6 text-center">
 
-        {/* 🔍 قسم البحث الرئيسي */}
-        <section className="container max-w-3xl mx-auto text-center py-16">
-          <h1 className="text-3xl font-bold mb-6">
-            ابحث عن عقارك بسهولة
-          </h1>
+    {/* Title */}
+    <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
+      وسيط عقاري أكتوبر
+    </h1>
 
-          <div className="flex flex-col md:flex-row gap-3">
-            <input
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="شقة، فيلا، حدائق أكتوبر، سعر..."
-              className="flex-1 p-4 border rounded-lg text-right"
-            />
+    <p className="text-green-100 text-lg mb-8">
+      منصة بسيطة تجمع بين الملاك والمشترين داخل نطاق مدينة 6 أكتوبر
+         </p>
 
-            <button
-              onClick={handleSearch}
-              className="px-6 py-4 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90"
-            >
-              بحث
-            </button>
-          </div>
+    {/* Buttons */}
+    <div className="flex justify-center gap-4 flex-wrap mb-10">
+      <a
+        href="/property_requests"
+        className="bg-green-800 text-white px-7 py-3 rounded-xl font-bold hover:bg-green-900 transition"
+      >
+        🔍 اطلب عقارك
+      </a>
 
-          <div className="mt-6">
-            <Link
-              href="/properties"
-              className="inline-block px-8 py-3 rounded-lg bg-gray-900 text-white font-semibold hover:bg-gray-800"
-            >
-              تصفح جميع العقارات
-            </Link>
-          </div>
-        </section>
-
-        {/* ⭐ العقارات المميزة */}
-        <section className="container mt-10">
-          <h2 className="text-2xl font-bold mb-6 text-right">
-            ⭐ العقارات المميزة
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {featured.map((item) => {
-              const images = Array.isArray(item.images)
-                ? item.images
-                : JSON.parse(item.images || "[]");
-
-              return (
-                <div
-                  key={item.id}
-                  className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition text-right"
-                >
-                  {images.length > 0 && (
-                    <div className="relative w-full h-48 mb-4">
-                      <Image
-                        src={images[0]}
-                        alt={item.title}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-
-                  <h3 className="font-bold text-lg">{item.title}</h3>
-
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                    {item.description}
-                  </p>
-
-                  <p className="mt-3 font-semibold text-primary">
-                    {item.price} جنيه
-                  </p>
-
-                  <Link
-                    href={`/properties/${item.slug}`}
-                    className="text-blue-600 mt-3 inline-block"
-                  >
-                    عرض التفاصيل →
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* 🏠 أحدث العقارات */}
-        <section className="container mt-20 mb-20">
-          <h2 className="text-2xl font-bold mb-6 text-right">
-            🏠 أحدث العقارات
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {latest.map((item) => {
-              const images = Array.isArray(item.images)
-                ? item.images
-                : JSON.parse(item.images || "[]");
-
-              return (
-                <div
-                  key={item.id}
-                  className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition text-right"
-                >
-                  {images.length > 0 && (
-                    <div className="relative w-full h-48 mb-4">
-                      <Image
-                        src={images[0]}
-                        alt={item.title}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-
-                  <h3 className="font-bold text-lg">{item.title}</h3>
-
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                    {item.description}
-                  </p>
-
-                  <p className="mt-3 font-semibold text-primary">
-                    {item.price} جنيه
-                  </p>
-
-                  <Link
-                    href={`/properties/${item.slug}`}
-                    className="text-blue-600 mt-3 inline-block"
-                  >
-                    عرض التفاصيل →
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      </main>
-
-      <Footer />
+      <a
+        href="/add-property"
+        className="bg-white text-green-700 px-7 py-3 rounded-xl font-bold hover:bg-white-100 transition"
+      >
+        ➕ أضف عقارك
+      </a>
     </div>
+
+    {/* How it works */}
+    <div className="max-w-xl mx-auto bg-white/10 backdrop-blur rounded-2xl p-6 text-right">
+      <h3 className="font-bold text-lg mb-4 text-center">
+        كيف يعمل الموقع؟
+      </h3>
+
+      <ul className="space-y-2 text-sm text-white-50">
+        <li>✔ اخنار عقارك المناسب</li>
+        <li>✔ اضغط لمعرفة التقاصيل</li>
+        <li>✔  التواصل على الواتساب</li>
+        <li>✔ سيتم الرد عليك فورًا</li>
+      </ul>
+    </div>
+
+    {/* Badges */}
+    <div className="mt-10 flex justify-center flex-wrap gap-3 text-sm">
+      {[
+        "متخصص أكتوبر فقط",
+        "بيانات مباشرة",
+        "بدون تسجيل",
+        "تواصل فوري",
+      ].map((item, i) => (
+        <span
+          key={i}
+          className="bg-white/15 px-4 py-2 rounded-full font-semibold"
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+
+  </div>
+</section>
+
+
+      {/* ================= LISTED PROPERTIES ================= */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6">
+
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-extrabold text-green-700 mb-3">
+              العقارات المعروضة
+            </h2>
+            <p className="text-gray-600">
+              بعض العقارات المتاحة حاليًا داخل مدينة 6 أكتوبر
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {properties?.map((property) => {
+              let imageUrl: string | null = null;
+
+              try {
+                const imagesArray = Array.isArray(property.images)
+                  ? property.images
+                  : JSON.parse(property.images || "[]");
+
+                imageUrl = imagesArray[0] || null;
+              } catch {
+                imageUrl = null;
+              }
+
+              return (
+                <div
+                  key={property.id}
+                  className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden"
+                >
+                  {/* Image */}
+                  <div className="relative h-48 w-full bg-gray-200">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={property.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        لا توجد صورة
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-5 text-right">
+                    <h3 className="font-bold text-lg mb-1">
+                      {property.title}
+                    </h3>
+
+                    <p className="text-sm text-gray-600 mb-2">
+                      📍 {property.location || "غير محدد"}
+                    </p>
+
+                    <p className="text-green-700 font-extrabold mb-4">
+                      {property.price?.toLocaleString()} جنيه
+                    </p>
+
+                    <a
+                      href={`/properties/${property.id}`}
+                      className="block text-center border border-green-600 text-green-600 py-2 rounded-xl font-semibold hover:bg-green-50"
+                    >
+                      تفاصيل
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="text-center mt-14">
+            <a
+              href="/properties"
+              className="inline-block bg-green-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-green-700 transition"
+            >
+              تصفح كل العقارات
+            </a>
+          </div>
+
+        </div>
+      </section>
+    </main>
   );
 }
+
+
+
+
+

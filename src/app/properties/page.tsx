@@ -1,70 +1,83 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import Header from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import Image from "next/image";
-import Link from "next/link";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-export default function PropertiesPage() {
-  const [properties, setProperties] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function PropertiesPage() {
+  const { data: properties, error } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("status", "approved")
+    .order("created_at", { ascending: false });
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      const { data, error } = await supabase.from("properties").select("*");
-      if (error) console.error("خطأ في جلب العقارات:", error);
-      else setProperties(data);
-      setLoading(false);
-    };
-    fetchProperties();
-  }, []);
+  if (error) {
+    return <div>حدث خطأ أثناء تحميل العقارات</div>;
+  }
 
-  if (loading) return <p className="text-center mt-10">جارٍ تحميل العقارات...</p>;
+  if (!properties || properties.length === 0) {
+    return <div>لا توجد عقارات معروضة حاليًا</div>;
+  }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {properties.map((property) => {
+        let imageUrl: string | null = null;
 
-      <main className="container py-12 grid md:grid-cols-3 gap-6">
-        {properties.map((property) => (
-          <div key={property.id} className="bg-white shadow rounded-lg p-4">
-            <div className="relative w-full h-48 mb-3">
-              <Image
-                src={
-                  property.images && property.images.length > 0
-                    ? Array.isArray(property.images)
-                      ? property.images[0]
-                      : JSON.parse(property.images)[0]
-                    : "/no-image.png"
-                }
-                alt={property.title || "عقار"}
-                fill
-                className="object-cover rounded-lg"
-              />
+        try {
+          const imagesArray = Array.isArray(property.images)
+            ? property.images
+            : JSON.parse(property.images || "[]");
+
+          imageUrl = imagesArray[0] || null;
+        } catch {
+          imageUrl = null;
+        }
+
+        return (
+          <div
+            key={property.id}
+            className="rounded-xl border shadow-sm overflow-hidden bg-white"
+          >
+            {/* Image */}
+            <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={property.title}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-gray-400">لا توجد صورة</span>
+              )}
             </div>
 
-            <h2 className="text-lg font-bold mb-2">{property.title}</h2>
-            <p className="text-blue-600 font-semibold mb-2">
-              💰 {property.price} {property.currency || "جنيه"}
-            </p>
+            <div className="p-4 text-right">
+              <h3 className="font-bold text-lg">{property.title}</h3>
 
-            <Link
-              href={`/properties/${property.slug}`}
-              className="block bg-gray-800 text-white text-center py-2 rounded-lg hover:bg-gray-700 transition"
-            >
-              عرض التفاصيل
-            </Link>
+              <p className="text-sm text-gray-600">
+                {property.location || "غير محدد"}
+              </p>
+
+              <p className="text-green-600 font-bold mt-2">
+                {property.price?.toLocaleString()} جنيه
+              </p>
+
+              <div className="flex gap-2 mt-4">
+                <a
+                  href={`/properties/${property.id}`}
+                  className="flex-1 border border-green-600 text-green-600 text-center py-2 rounded-lg hover:bg-green-50"
+                >
+                  تفاصيل
+                </a>
+
+
+              </div>
+            </div>
           </div>
-        ))}
-      </main>
-
-      <Footer />
+        );
+      })}
     </div>
   );
 }

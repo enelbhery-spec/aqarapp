@@ -17,106 +17,99 @@ export default function AddPropertyForm() {
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<FileList | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    let uploadedImages: string[] = [];
+    try {
+      let uploadedImages: string[] = [];
 
-    // رفع الصور
-    if (images && images.length > 0) {
-      for (let i = 0; i < images.length; i++) {
-        const file = images[i];
-        const fileName = `${Date.now()}-${file.name}`;
+      /* ================= رفع الصور ================= */
+      if (images && images.length > 0) {
+        for (let i = 0; i < images.length; i++) {
+          const file = images[i];
+          const fileName = `property-${Date.now()}-${file.name}`;
 
-        const { data, error } = await supabase.storage
-          .from("properties")
-          .upload(fileName, file);
+          const { error: uploadError } = await supabase.storage
+            .from("properties")
+            .upload(fileName, file, {
+              cacheControl: "3600",
+              upsert: false,
+            });
 
-        if (!error)
-          uploadedImages.push(
-            `https://${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(
-              "https://",
-              ""
-            )}/storage/v1/object/public/properties/${fileName}`
-          );
+          if (uploadError) {
+            throw uploadError;
+          }
+
+          const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/properties/${fileName}`;
+          uploadedImages.push(publicUrl);
+        }
       }
-    }
 
-    // حفظ العقار في Supabase
-    const { data, error } = await supabase
-      .from("properties")
-      .insert([
-        {
+      /* ================= حفظ العقار في Supabase ================= */
+      const { data, error } = await supabase
+        .from("properties")
+        .insert([
+          {
+            title,
+            price: Number(price),
+            area: Number(area) || null,
+            bedrooms: Number(bedrooms) || null,
+            bathrooms: Number(bathrooms) || null,
+            phone,
+            description,
+            images: uploadedImages,
+            status: "pending", // ⭐ مهم جدًا
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      /* ================= إرسال إلى Google Sheet ================= */
+      await fetch("/api/sync-to-sheet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title,
-          price: Number(price),
-          area: Number(area),
-          bedrooms: Number(bedrooms),
-          bathrooms: Number(bathrooms),
+          price,
+          area,
+          bedrooms,
+          bathrooms,
           phone,
           description,
-          images: uploadedImages,
-        },
-      ])
-      .select();
+          image: uploadedImages[0] || "",
+          status: "pending",
+        }),
+      });
 
-    if (error) {
+      alert("✔ تم إرسال العقار للمراجعة بنجاح");
+      window.location.reload();
+    } catch (err) {
+      console.error("Add Property Error:", err);
       alert("❌ حدث خطأ أثناء إضافة العقار");
-      console.error(error);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    // ID العقار الجديد
-    const propertyId = data[0].id;
-
-    // 🔥 إرسال البوست إلى فيسبوك
-    await fetch("/api/publish-to-facebook", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        price,
-        area,
-        bedrooms,
-        bathrooms,
-        phone,
-        description,
-        image: uploadedImages[0] || null,
-        url: `https://aqarapp.netlify.app/properties/${propertyId}`,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("FACEBOOK RESPONSE:", data))
-      .catch((err) => console.error("FACEBOOK ERROR:", err));
-
-    alert("✔ تمت إضافة العقار وتم نشره تلقائيًا على فيسبوك");
-    window.location.reload();
   };
 
   return (
     <div style={{ direction: "rtl", padding: "40px" }}>
-      <h1 style={{ textAlign: "center" }}>نموذج إضافة عقار</h1>
+      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
+        نموذج إضافة عقار
+      </h1>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          maxWidth: "600px",
-          margin: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "15px",
-          background: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 0 10px #ddd",
-        }}
-      >
+      <form onSubmit={handleSubmit} style={formStyle}>
         <input
           type="text"
           placeholder="عنوان العقار"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           style={inputStyle}
+          required
         />
 
         <input
@@ -125,6 +118,7 @@ export default function AddPropertyForm() {
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           style={inputStyle}
+          required
         />
 
         <input
@@ -157,6 +151,7 @@ export default function AddPropertyForm() {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           style={inputStyle}
+          required
         />
 
         <textarea
@@ -166,26 +161,33 @@ export default function AddPropertyForm() {
           style={{ ...inputStyle, height: "120px" }}
         />
 
-        <input type="file" multiple onChange={(e) => setImages(e.target.files)} />
+        <input
+          type="file"
+          multiple
+          onChange={(e) => setImages(e.target.files)}
+        />
 
-        <button
-          type="submit"
-          style={{
-            padding: "12px",
-            background: "#0070f3",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "18px",
-            cursor: "pointer",
-          }}
-        >
-          إضافة العقار
+        <button type="submit" disabled={loading} style={buttonStyle}>
+          {loading ? "جاري الإرسال..." : "إضافة العقار"}
         </button>
       </form>
     </div>
   );
 }
+
+/* ===== styles ===== */
+
+const formStyle = {
+  maxWidth: "600px",
+  margin: "auto",
+  display: "flex",
+  flexDirection: "column" as const,
+  gap: "15px",
+  background: "#fff",
+  padding: "25px",
+  borderRadius: "12px",
+  boxShadow: "0 0 15px #ddd",
+};
 
 const inputStyle = {
   padding: "12px",
@@ -193,4 +195,14 @@ const inputStyle = {
   border: "1px solid #ddd",
   fontSize: "16px",
   width: "100%",
+};
+
+const buttonStyle = {
+  padding: "14px",
+  background: "#0070f3",
+  color: "#fff",
+  border: "none",
+  borderRadius: "10px",
+  fontSize: "18px",
+  cursor: "pointer",
 };

@@ -1,59 +1,69 @@
-import type { Metadata } from "next";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
+import type { Metadata } from "next";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export const metadata: Metadata = {
-  title: "aqarapp | عقارات حدائق أكتوبر",
+  title: {
+    default: "سوق العقارات | بيع وشراء وتأجير",
+    template: "%s | سوق العقارات",
+  },
   description:
-    "aqarapp هو دليلك الأول للبحث عن العقارات في حدائق أكتوبر — شقق، فلل، ومحلات للبيع أو الإيجار بأفضل الأسعار والخدمات.",
-  manifest: "/manifest.json",
+    "منصة سوق العقارات لعرض وطلب الشقق، الفلل، الأراضي، والإيجارات في جميع المحافظات بسهولة وأمان.",
   keywords: [
     "عقارات",
-    "حدائق أكتوبر",
+    "بيع شقق",
+    "شراء شقق",
+    "إيجار",
     "شقق للبيع",
     "شقق للإيجار",
-    "فلل للبيع",
-    "محلات تجارية",
-    "سكن مصر",
-    "aqarapp",
+    "فلل",
+    "أراضي",
     "سوق العقارات",
-    "مشروعات أكتوبر",
   ],
-  authors: [{ name: "aqarapp فريق التطوير" }],
+  authors: [{ name: "سوق العقارات" }],
+  creator: "سوق العقارات",
+  publisher: "سوق العقارات",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  alternates: {
+    canonical: "https://aqarapp.vercel.app", // عدل الرابط
+  },
   openGraph: {
-    title: "aqarapp | عقارات حدائق أكتوبر",
+    title: "سوق العقارات | بيع وشراء وتأجير",
     description:
-      "ابحث عن أفضل الشقق، الفلل، والمحلات في حدائق أكتوبر عبر تطبيق aqarapp — تجربة سهلة وسريعة للعثور على عقارك المثالي.",
-    url: "https://aqarapp-1794n75lv-enelbhery-specs-projects.vercel.app/",
-    siteName: "aqarapp",
-    images: [
-      {
-        url: "/logo.png",
-        width: 800,
-        height: 600,
-        alt: "aqarapp - عقارات حدائق أكتوبر",
-      },
-    ],
+      "اعرض عقارك أو ابحث عن شقة، فيلا أو أرض بسهولة عبر منصة سوق العقارات.",
+    url: "https://aqarapp.vercel.app",
+    siteName: "سوق العقارات",
     locale: "ar_EG",
     type: "website",
+    images: [
+      {
+        url: "https://aqarapp.vercel.app/og-image.jpg",
+        width: 100,
+        height: 100,
+        alt: "سوق العقارات",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "aqarapp | عقارات حدائق أكتوبر",
+    title: "سوق العقارات",
     description:
-      "استكشف أحدث العقارات والشقق في حدائق أكتوبر بسهولة مع aqarapp.",
-    images: ["/logo.png"],
-    creator: "@aqarapp",
+      "أفضل منصة لعرض وطلب العقارات في مصر",
+    images: ["https://aqarapp.vercel.app/og-image.jpg"],
   },
   icons: {
-    icon: "/logo.png",
-    apple: "/icons/icon-192x192.png",
-  },
-
-  // ✅ كود Google Site Verification الصحيح
-  other: {
-    "google-site-verification":
-"7XY4QFlcbO13HsbJ3M-4Pl1l9A4Pbbe-GltnYncvINA",
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -64,36 +74,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-      <head>
-        {/* كود AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4973672854580770"
-          crossOrigin="anonymous"
-        ></script>
-
-        {/* خطوط الموقع */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Space+Grotesk:wght@300..700&display=swap"
-          rel="stylesheet"
-        />
-
-        {/* إعدادات الموبايل و PWA */}
-        <meta name="theme-color" content="#ffffff" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="aqarapp" />
-      </head>
-
-      <body className="font-body antialiased">
-        {children}
-        <Toaster />
+      <body className="bg-gray-50 text-gray-800">
+        <Header />
+        <main className="min-h-screen">{children}</main>
+        <Footer />
+        <WhatsAppButton />
       </body>
     </html>
   );

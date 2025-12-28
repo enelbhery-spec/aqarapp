@@ -1,188 +1,105 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
-import Header from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import Image from "next/image";
-import { MapPin, Phone, Bath, BedDouble, Ruler, Share2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Navigation } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
+import PropertyImageSlider from "@/components/PropertyImageSlider";
 
-export default function PropertyDetails() {
-  const params = useParams();
-  const [property, setProperty] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-  useEffect(() => {
-    const fetchProperty = async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+type Property = {
+  id: number;
+  title: string;
+  price: number;
+  location: string;
+  description: string;
+  type: string;
+  area: number;
+  rooms: number;
+  phone: string;
+  images: any;
+};
 
-      const { data, error } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("slug", decodeURIComponent(params.id as string))
-        .single();
+export default async function PropertyDetails({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { data: property } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("id", params.id)
+    .single<Property>();
 
-      if (error) console.error("❌ خطأ في جلب بيانات العقار:", error);
-      else setProperty(data);
+  if (!property) {
+    return <p className="text-center py-20">العقار غير موجود</p>;
+  }
 
-      setLoading(false);
-    };
+  /* ✅ Normalize images */
+  const normalizeImages = (data: any): string[] => {
+    if (Array.isArray(data)) return data;
 
-    if (params?.id) fetchProperty();
-  }, [params?.id]);
-
-  if (loading)
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <div className="container py-12">
-          <Skeleton className="h-10 w-1/2 mb-4" />
-          <Skeleton className="h-96 w-full mb-4" />
-          <Skeleton className="h-6 w-1/3" />
-        </div>
-        <Footer />
-      </div>
-    );
-
-  if (!property)
-    return (
-      <p className="text-center mt-10 text-red-500">
-        لم يتم العثور على تفاصيل العقار.
-      </p>
-    );
-
-  const images =
-    property.images && property.images.length > 0
-      ? Array.isArray(property.images)
-        ? property.images
-        : JSON.parse(property.images)
-      : ["/no-image.png"];
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: property.title,
-          text: "شاهد هذا العقار المميز!",
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error("❌ فشل في المشاركة:", err);
+    if (typeof data === "string" && data.trim() !== "") {
+      if (data.trim().startsWith("[")) {
+        try {
+          return JSON.parse(data);
+        } catch {
+          return [];
+        }
       }
-    } else {
-      alert("المشاركة غير مدعومة على هذا المتصفح.");
+      return [data];
     }
+
+    return [];
   };
 
+  const images = normalizeImages(property.images);
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header />
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      {/* الصور */}
+      <div className="mb-8">
+        <PropertyImageSlider
+          images={images}
+          title={property.title}
+        />
+      </div>
 
-      <main className="container py-10 max-w-5xl mx-auto">
-        {/* ✅ صور العقار */}
-        <div className="mb-8 rounded-2xl overflow-hidden shadow-lg border border-gray-200">
-          <Swiper
-            modules={[Pagination, Navigation]}
-            pagination={{ clickable: true }}
-            navigation
-            className="w-full h-[400px]"
-          >
-            {images.map((img: string, index: number) => (
-              <SwiperSlide key={index}>
-                <div className="relative w-full h-[400px]">
-                  <Image
-                    src={img}
-                    alt={property.title || "عقار"}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+      {/* البيانات */}
+      <h1 className="text-3xl font-bold mb-4">{property.title}</h1>
 
-        {/* ✅ تفاصيل العقار */}
-        <h1 className="text-3xl font-bold mb-4 text-gray-900">
-          {property.title}
-        </h1>
+      <p className="text-xl text-green-600 font-semibold mb-2">
+        {property.price.toLocaleString()} جنيه
+      </p>
 
-        <div className="flex flex-wrap gap-4 mb-6 text-gray-700">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-blue-600" />
-            <span>{property.location || "غير محدد"}</span>
-          </div>
+      <p className="text-gray-600 mb-4">📍 {property.location}</p>
 
-          <div className="flex items-center gap-2">
-            <Ruler className="w-5 h-5 text-green-600" />
-            <span>{property.area ? `${property.area} م²` : "غير محدد"}</span>
-          </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="border p-3 rounded">🏠 {property.type}</div>
+        <div className="border p-3 rounded">📐 {property.area} م²</div>
+        <div className="border p-3 rounded">🛏 {property.rooms} غرف</div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <BedDouble className="w-5 h-5 text-orange-600" />
-            <span>{property.bedrooms || 0} غرف</span>
-          </div>
+      <p className="leading-relaxed text-gray-700 mb-8">
+        {property.description}
+      </p>
 
-          <div className="flex items-center gap-2">
-            <Bath className="w-5 h-5 text-purple-600" />
-            <span>{property.bathrooms || 0} حمام</span>
-          </div>
+      {/* التواصل */}
+      <div className="flex gap-4">
+        <a
+          href={`tel:${property.phone}`}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+        >
+          📞 اتصال
+        </a>
 
-          {/* ✅ رقم التليفون */}
-          <div className="flex items-center gap-2">
-            <Phone className="w-5 h-5 text-green-600" />
-            <span>{property.phone || "غير متوفر"}</span>
-          </div>
-        </div>
-
-        <p className="text-gray-800 leading-relaxed mb-6 text-lg">
-          {property.description || "لا يوجد وصف متاح."}
-        </p>
-
-        <div className="text-xl font-semibold text-blue-700 mb-8">
-          💰 السعر: {property.price || "غير محدد"} {property.currency || "جنيه"}
-        </div>
-
-        {/* ✅ أزرار التواصل */}
-        <div className="flex flex-wrap gap-4">
-          <Button
-            asChild
-            className="bg-green-600 hover:bg-green-700 text-white px-6"
-          >
-            <a
-              href={`https://wa.me/${
-                property.phone || "201000000000"
-              }?text=مرحباً، أنا مهتم بعقاركم ${property.title}`}
-              target="_blank"
-            >
-              <Phone className="inline-block mr-2" />
-              تواصل عبر واتساب
-            </a>
-          </Button>
-
-          <Button
-            onClick={handleShare}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-          >
-            <Share2 className="inline-block mr-2" />
-            مشاركة
-          </Button>
-        </div>
-      </main>
-
-      <Footer />
+        <a
+          href={`https://wa.me/${property.phone}`}
+          target="_blank"
+          className="bg-green-600 text-white px-6 py-3 rounded-lg"
+        >
+          💬 واتساب
+        </a>
+      </div>
     </div>
   );
 }
