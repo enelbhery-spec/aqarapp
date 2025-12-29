@@ -69,22 +69,6 @@ export default function AddPropertyForm() {
 
       if (error) throw error;
 
-      /* ================= إرسال إلى Google Sheet ================= */
-      await fetch("/api/sync-to-sheet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          price,
-          area,
-          bedrooms,
-          bathrooms,
-          phone,
-          description,
-          image: uploadedImages[0] || "",
-          status: "pending",
-        }),
-      });
 
       alert("✔ تم إرسال العقار للمراجعة بنجاح");
       window.location.reload();
