@@ -2,8 +2,8 @@
 export const runtime = 'edge';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import Header from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit3 } from "lucide-react";

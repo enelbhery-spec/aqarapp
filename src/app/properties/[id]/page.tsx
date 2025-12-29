@@ -22,19 +22,22 @@ type Property = {
 export default async function PropertyDetails({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  /* ✅ Next.js 15: params Promise */
+  const { id } = await params;
+
   const { data: property } = await supabase
     .from("properties")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single<Property>();
 
   if (!property) {
     return <p className="text-center py-20">العقار غير موجود</p>;
   }
 
-  /* ✅ Normalize images */
+  /* ✅ Normalize images (Array / JSON string / single URL) */
   const normalizeImages = (data: any): string[] => {
     if (Array.isArray(data)) return data;
 
@@ -58,10 +61,7 @@ export default async function PropertyDetails({
     <div className="max-w-6xl mx-auto px-4 py-10">
       {/* الصور */}
       <div className="mb-8">
-        <PropertyImageSlider
-          images={images}
-          title={property.title}
-        />
+        <PropertyImageSlider images={images} title={property.title} />
       </div>
 
       {/* البيانات */}
