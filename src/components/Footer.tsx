@@ -48,7 +48,7 @@ export default function Footer() {
           <h4 className="font-bold mb-4">معلومات</h4>
           <ul className="space-y-2 text-sm">
             <li>
-              <Link href="/privacy-policy" className="hover:underline">
+              <Link href="/privacy" className="hover:underline">
                 سياسة الخصوصية
               </Link>
             </li>

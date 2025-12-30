@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   authors: [{ name: "سوق العقارات" }],
   creator: "سوق العقارات",
   publisher: "سوق العقارات",
+
+  other: {
+    "google-adsense-account": "ca-pub-4973672854580770",
+  },
+
   robots: {
     index: true,
     follow: true,
@@ -34,7 +39,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://aqarapp.vercel.app", // عدل الرابط
+    canonical: "https://aqarapp.vercel.app",
   },
   openGraph: {
     title: "سوق العقارات | بيع وشراء وتأجير",
@@ -47,8 +52,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "https://aqarapp.vercel.app/og-image.jpg",
-        width: 100,
-        height: 100,
+        width: 1200,
+        height: 630,
         alt: "سوق العقارات",
       },
     ],
@@ -56,8 +61,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "سوق العقارات",
-    description:
-      "أفضل منصة لعرض وطلب العقارات في مصر",
+    description: "أفضل منصة لعرض وطلب العقارات في مصر",
     images: ["https://aqarapp.vercel.app/og-image.jpg"],
   },
   icons: {
