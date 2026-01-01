@@ -6,6 +6,21 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+/* ✅ دالة تحويل رقم الواتساب */
+function formatWhatsAppNumber(phone: string) {
+  let clean = phone.replace(/\s|-/g, "");
+
+  if (clean.startsWith("+")) {
+    return clean.replace("+", "");
+  }
+
+  if (clean.startsWith("0")) {
+    return "20" + clean.substring(1);
+  }
+
+  return clean;
+}
+
 type Property = {
   id: number;
   title: string;
@@ -93,8 +108,9 @@ export default async function PropertyDetails({
         </a>
 
         <a
-          href={`https://wa.me/${property.phone}`}
+          href={`https://wa.me/${formatWhatsAppNumber(property.phone)}`}
           target="_blank"
+          rel="noopener noreferrer"
           className="bg-green-600 text-white px-6 py-3 rounded-lg"
         >
           💬 واتساب
