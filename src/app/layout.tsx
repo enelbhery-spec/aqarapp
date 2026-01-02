@@ -78,6 +78,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
+    <head>
+     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1QVGGKVV8F"></script>
+     </head>
       <body className="bg-gray-50 text-gray-800">
         <Header />
         <main className="min-h-screen">{children}</main>
