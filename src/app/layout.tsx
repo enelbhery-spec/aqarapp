@@ -86,7 +86,6 @@ export default function RootLayout({
         <main className="min-h-screen">{children}</main>
         <Footer />
         <WhatsAppButton />
-        <script src="https://pl28377825.effectivegatecpm.com/03/43/09/034309bc0a0401f68234ba23c537f4fe.js"></script>
       </body>
     </html>
   );
