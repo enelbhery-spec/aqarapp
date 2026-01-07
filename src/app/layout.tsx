@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: {
@@ -79,8 +80,20 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
     <head>
-     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1QVGGKVV8F"></script>
-     </head>
+<Script
+          src={`https://www.googletagmanager.com/gtag/js?id=G-1QVGGKVV8F`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-1QVGGKVV8F', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>     </head>
       <body className="bg-gray-50 text-gray-800">
         <Header />
         <main className="min-h-screen">{children}</main>
