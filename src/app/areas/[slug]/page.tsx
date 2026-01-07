@@ -15,6 +15,10 @@ type Area = {
 };
 
 /* ================== PAGE ================== */
+import { notFound } from "next/navigation";
+import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
+import type { Area } from "@/types/area";
+
 export default function AreaPage({
   params,
 }: {
@@ -23,17 +27,29 @@ export default function AreaPage({
   const { slug } = params;
 
   // 🔍 البحث عن المنطقة
-  let selectedArea: Area | null = null;
+  const selectedArea =
+    hadayekOctoberAreas
+      .flatMap((group) => group.areas)
+      .find((area) => area.slug === slug) || null;
 
-  hadayekOctoberAreas.forEach((group) => {
-    const found = group.areas.find((area) => area.slug === slug);
-    if (found) selectedArea = found;
-  });
-
-  if (!selectedArea) return notFound();
+  if (!selectedArea) {
+    notFound();
+  }
 
   return (
-    <main className="bg-gray-50 text-gray-800">
+    <main className="bg-gray-50 text-gray-800 min-h-screen">
+      <section className="max-w-5xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">
+          {selectedArea.name}
+        </h1>
+
+        <p className="text-gray-600 leading-relaxed">
+          {selectedArea.description}
+        </p>
+      </section>
+    </main>
+  );
+}
 
       {/* ================= HERO ================= */}
       <section className="bg-gradient-to-bl from-green-600 via-green-500 to-emerald-500 text-white py-16">
