@@ -1,29 +1,37 @@
 import { notFound } from "next/navigation";
+import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
 import Link from "next/link";
 import AreaImageSlider from "@/components/AreaImageSlider";
-import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
-import type { Area } from "@/types/area";
+
+/* ================== TYPES ================== */
+type Area = {
+  name: string;
+  slug: string;
+  description?: string;
+  avgPrice?: string;
+  services?: string[];
+  mapQuery?: string;
+};
 
 /* ================== PAGE ================== */
-export default function AreaPage({
+export default async function AreaPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
 
-  // 🔍 البحث عن المنطقة
-  const selectedArea: Area | undefined =
-    hadayekOctoberAreas
-      .flatMap((group) => group.areas)
-      .find((area) => area.slug === slug);
+  // 🔍 البحث عن المنطقة (حل نهائي لمشكلة never)
+  const selectedArea: Area | undefined = hadayekOctoberAreas
+    .flatMap((group) => group.areas)
+    .find((area) => area.slug === slug);
 
   if (!selectedArea) {
-    notFound();
+    return notFound();
   }
 
   return (
-    <main className="bg-gray-50 text-gray-800 min-h-screen">
+    <main className="bg-gray-50 text-gray-800">
 
       {/* ================= HERO ================= */}
       <section className="bg-gradient-to-bl from-green-600 via-green-500 to-emerald-500 text-white py-16">
@@ -60,7 +68,7 @@ export default function AreaPage({
 
             <h3 className="font-bold mb-3">متوسط الأسعار</h3>
             <p className="text-gray-700 mb-6">
-              {selectedArea.avgPrice ?? "متغير حسب نوع العقار والمساحة"}
+              {selectedArea.avgPrice ?? "متغير بالنسبة لكل منطقة"}
             </p>
 
             <h3 className="font-bold mb-3">الخدمات المتوفرة</h3>

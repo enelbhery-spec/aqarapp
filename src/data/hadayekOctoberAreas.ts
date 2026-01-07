@@ -1,6 +1,7 @@
 export type AreaItem = {
   name: string;
   slug: string;
+   description?: string;
 };
 
 export type AreaCategory = {
@@ -29,7 +30,7 @@ export const hadayekOctoberAreas: AreaCategory[] = [
 
   {
     id: "elsiahia",
-   // title: "مناطق السياحية",
+    title: "مناطق السياحية",
     areas: [
      // { name: "السياحية أ", slug: "elssiahia-أ" },
      // { name: "السياحية ب", slug: "elssiahia-ب" },

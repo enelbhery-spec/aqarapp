@@ -9,12 +9,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+/* ================== PAGE ================== */
 export default async function AreaPropertiesDetailsPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
 
   /* ===== جلب بيانات المنطقة ===== */
   let selectedArea: any = null;
@@ -26,7 +27,7 @@ export default async function AreaPropertiesDetailsPage({
 
   if (!selectedArea) return notFound();
 
-  /* ===== جلب عقارات المنطقة (بدون صور) ===== */
+  /* ===== جلب العقارات ===== */
   const { data: properties, error } = await supabase
     .from("properties")
     .select(`
@@ -55,7 +56,6 @@ export default async function AreaPropertiesDetailsPage({
   return (
     <main className="bg-gray-50 text-gray-800 py-12">
 
-      {/* ===== HEADER ===== */}
       <section className="text-center mb-10">
         <h1 className="text-3xl font-bold mb-2">
           العقارات المتاحة في {selectedArea.name}
@@ -65,14 +65,12 @@ export default async function AreaPropertiesDetailsPage({
         </p>
       </section>
 
-      {/* ===== NO DATA ===== */}
       {(!properties || properties.length === 0) && (
         <p className="text-center text-gray-500">
           لا توجد عقارات متاحة حاليًا في هذه المنطقة
         </p>
       )}
 
-      {/* ===== PROPERTIES LIST ===== */}
       <div className="max-w-5xl mx-auto space-y-6 px-4">
         {properties?.map((property) => (
           <div
@@ -115,7 +113,6 @@ export default async function AreaPropertiesDetailsPage({
         ))}
       </div>
 
-      {/* ===== BACK ===== */}
       <div className="text-center mt-10">
         <Link
           href={`/areas/${slug}`}
