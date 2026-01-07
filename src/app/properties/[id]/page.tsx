@@ -1,121 +1,74 @@
+import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
-import PropertyImageSlider from "@/components/PropertyImageSlider";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-/* ✅ دالة تحويل رقم الواتساب */
-function formatWhatsAppNumber(phone: string) {
-  let clean = phone.replace(/\s|-/g, "");
-
-  if (clean.startsWith("+")) {
-    return clean.replace("+", "");
-  }
-
-  if (clean.startsWith("0")) {
-    return "20" + clean.substring(1);
-  }
-
-  return clean;
-}
-
-type Property = {
-  id: number;
-  title: string;
-  price: number;
-  location: string;
-  description: string;
-  type: string;
-  area: number;
-  rooms: number;
-  phone: string;
-  images: any;
-};
-
-export default async function PropertyDetails({
+export default async function PropertyDetailsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  /* ✅ Next.js 15: params Promise */
-  const { id } = await params;
+  const { id } = params;
 
-  const { data: property } = await supabase
+  const { data: property, error } = await supabase
     .from("properties")
     .select("*")
     .eq("id", id)
-    .single<Property>();
+    .eq("status", "approved")
+    .single();
 
-  if (!property) {
-    return <p className="text-center py-20">العقار غير موجود</p>;
-  }
-
-  /* ✅ Normalize images (Array / JSON string / single URL) */
-  const normalizeImages = (data: any): string[] => {
-    if (Array.isArray(data)) return data;
-
-    if (typeof data === "string" && data.trim() !== "") {
-      if (data.trim().startsWith("[")) {
-        try {
-          return JSON.parse(data);
-        } catch {
-          return [];
-        }
-      }
-      return [data];
-    }
-
-    return [];
-  };
-
-  const images = normalizeImages(property.images);
+  if (error || !property) return notFound();
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      {/* الصور */}
-      <div className="mb-8">
-        <PropertyImageSlider images={images} title={property.title} />
-      </div>
+    <main className="bg-gray-50 text-gray-800 min-h-screen">
+      <section className="py-12">
+        <div className="container mx-auto px-4 max-w-3xl bg-white rounded-xl shadow p-8">
 
-      {/* البيانات */}
-      <h1 className="text-3xl font-bold mb-4">{property.title}</h1>
+          {/* ===== العنوان ===== */}
+          <h1 className="text-3xl font-bold mb-4">
+            {property.title}
+          </h1>
 
-      <p className="text-xl text-green-600 font-semibold mb-2">
-        {property.price.toLocaleString()} جنيه
-      </p>
+          {/* ===== السعر ===== */}
+          <p className="text-green-600 text-2xl font-bold mb-6">
+            {Number(property.price).toLocaleString()} جنيه
+          </p>
 
-      <p className="text-gray-600 mb-4">📍 {property.location}</p>
+          {/* ===== التفاصيل ===== */}
+          <ul className="space-y-3 text-lg">
+            <li>📍 المنطقة: {property.area_name || property.area_slug}</li>
+            <li>🏠 النوع: {property.type}</li>
+            <li>📐 المساحة: {property.area} م²</li>
+            <li>🛏 عدد الغرف: {property.rooms}</li>
+            <li>🚿 الحمامات: {property.bathrooms}</li>
+            <li>🏢 الدور: {property.floor}</li>
+            <li>📅 تاريخ الإضافة: {new Date(property.created_at).toLocaleDateString("ar-EG")}</li>
+          </ul>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="border p-3 rounded">🏠 {property.type}</div>
-        <div className="border p-3 rounded">📐 {property.area} م²</div>
-        <div className="border p-3 rounded">🛏 {property.rooms} غرف</div>
-      </div>
+          {/* ===== الوصف ===== */}
+          {property.description && (
+            <div className="mt-6">
+              <h2 className="text-xl font-bold mb-2">وصف العقار</h2>
+              <p className="text-gray-700 leading-relaxed">
+                {property.description}
+              </p>
+            </div>
+          )}
 
-      <p className="leading-relaxed text-gray-700 mb-8">
-        {property.description}
-      </p>
+          {/* ===== زر التواصل ===== */}
+          <a
+            href={`https://wa.me/201021732703?text=مهتم بعقار: ${property.title}`}
+            target="_blank"
+            className="block mt-8 bg-green-600 text-white text-center py-4 rounded-lg text-lg font-bold"
+          >
+            📞 تواصل واتساب
+          </a>
 
-      {/* التواصل */}
-      <div className="flex gap-4">
-        <a
-          href={`tel:${property.phone}`}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg"
-        >
-          📞 اتصال
-        </a>
-
-        <a
-          href={`https://wa.me/${formatWhatsAppNumber(property.phone)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-green-600 text-white px-6 py-3 rounded-lg"
-        >
-          💬 واتساب
-        </a>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -1,179 +1,228 @@
-import { createClient } from "@supabase/supabase-js";
-import Image from "next/image";
+import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
+import Link from "next/link";
+import PropertyCard from "@/components/PropertyCard";
+import { blogPosts } from "@/data/blogPosts";
 
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-
-export default async function Home() {
-    const { data: properties } = await supabase
-  .from("properties")
-  .select("id, title, price, location, images")
-  .eq("status", "approved")
-  .order("created_at", { ascending: false })
-  .limit(6);
-
+export default function HomePage() {
   return (
     <main className="bg-gray-50 text-gray-800">
 
-      {/* ================= HERO SECTION ================= */}
-<section className="bg-green-600 text-white py-20">
-  <div className="max-w-7xl mx-auto px-6 text-center">
+      {/* ================= HERO ================= */}
+      <section className="bg-gradient-to-bl from-green-600 via-green-500 to-emerald-500 text-white py-20">
+        <div className="container mx-auto px-4 text-center max-w-3xl">
+          <h1 className="text-4xl font-bold mb-4">
+            ابحث بذكاء عن عقارك في حدائق أكتوبر
+          </h1>
+          <p className="text-lg opacity-90 mb-8">
+            اختار المنطقة الصح الأول…
+            بدون صور مضللة – بدون وعود وهمية
+          </p>
 
-    {/* Title */}
-    <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
-      وسيط عقاري أكتوبر
-    </h1>
+          <a
+            href="https://wa.me/201021732703"
+            className="bg-white text-green-700 px-8 py-3 rounded-full font-bold inline-block"
+          >
+            اسألنا نرشح لك الأنسب
+          </a>
+        </div>
+      </section>
 
-    <p className="text-green-100 text-lg mb-8">
-      منصة بسيطة تجمع بين الملاك والمشترين داخل نطاق مدينة 6 أكتوبر
-         </p>
+      {/* ================= WHY THIS IDEA ================= */}
+      <section className="py-16">
+        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
 
-    {/* Buttons */}
-    <div className="flex justify-center gap-4 flex-wrap mb-10">
-      <a
-        href="/property_requests"
-        className="bg-green-800 text-white px-7 py-3 rounded-xl font-bold hover:bg-green-900 transition"
-      >
-        🔍 اطلب عقارك
-      </a>
-
-      <a
-        href="/add-property"
-        className="bg-white text-green-700 px-7 py-3 rounded-xl font-bold hover:bg-white-100 transition"
-      >
-        ➕ أضف عقارك
-      </a>
-    </div>
-
-    {/* How it works */}
-    <div className="max-w-xl mx-auto bg-white/10 backdrop-blur rounded-2xl p-6 text-right">
-      <h3 className="font-bold text-lg mb-4 text-center">
-        كيف يعمل الموقع؟
-      </h3>
-
-      <ul className="space-y-2 text-sm text-white-50">
-        <li>✔ اخنار عقارك المناسب</li>
-        <li>✔ اضغط لمعرفة التقاصيل</li>
-        <li>✔  التواصل على الواتساب</li>
-        <li>✔ سيتم الرد عليك فورًا</li>
-      </ul>
-    </div>
-
-    {/* Badges */}
-    <div className="mt-10 flex justify-center flex-wrap gap-3 text-sm">
-      {[
-        "متخصص أكتوبر فقط",
-        "بيانات مباشرة",
-        "بدون تسجيل",
-        "تواصل فوري",
-      ].map((item, i) => (
-        <span
-          key={i}
-          className="bg-white/15 px-4 py-2 rounded-full font-semibold"
-        >
-          {item}
-        </span>
-      ))}
-    </div>
-
-  </div>
-</section>
-
-
-      {/* ================= LISTED PROPERTIES ================= */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-extrabold text-green-700 mb-3">
-              العقارات المعروضة
-            </h2>
-            <p className="text-gray-600">
-              بعض العقارات المتاحة حاليًا داخل مدينة 6 أكتوبر
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h3 className="font-bold text-lg mb-2">🚫 بدون صور عقارات</h3>
+            <p className="text-sm text-gray-600">
+              لأن الصور غالبًا بتكون غير حقيقية أو قديمة
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {properties?.map((property) => {
-              let imageUrl: string | null = null;
-
-              try {
-                const imagesArray = Array.isArray(property.images)
-                  ? property.images
-                  : JSON.parse(property.images || "[]");
-
-                imageUrl = imagesArray[0] || null;
-              } catch {
-                imageUrl = null;
-              }
-
-              return (
-                <div
-                  key={property.id}
-                  className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden"
-                >
-                  {/* Image */}
-                  <div className="relative h-48 w-full bg-gray-200">
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={property.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        لا توجد صورة
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-5 text-right">
-                    <h3 className="font-bold text-lg mb-1">
-                      {property.title}
-                    </h3>
-
-                    <p className="text-sm text-gray-600 mb-2">
-                      📍 {property.location || "غير محدد"}
-                    </p>
-
-                    <p className="text-green-700 font-extrabold mb-4">
-                      {property.price?.toLocaleString()} جنيه
-                    </p>
-
-                    <a
-                      href={`/properties/${property.id}`}
-                      className="block text-center border border-green-600 text-green-600 py-2 rounded-xl font-semibold hover:bg-green-50"
-                    >
-                      تفاصيل
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h3 className="font-bold text-lg mb-2">📍 نركز على المنطقة</h3>
+            <p className="text-sm text-gray-600">
+              المنطقة الصح = قرار شراء صح
+            </p>
           </div>
 
-          <div className="text-center mt-14">
-            <a
-              href="/properties"
-              className="inline-block bg-green-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-green-700 transition"
-            >
-              تصفح كل العقارات
-            </a>
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h3 className="font-bold text-lg mb-2">📲 تواصل مباشر</h3>
+            <p className="text-sm text-gray-600">
+              لو مهتم فعلًا، كلمنا وخد تفاصيل حقيقية
+            </p>
           </div>
 
         </div>
       </section>
+
+      {/* ================= AREAS ================= */}
+      <section className="py-16 bg-gray-100">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold mb-10 text-center">
+            مناطق حدائق أكتوبر
+          </h2>
+
+          <div className="space-y-12">
+            {hadayekOctoberAreas.map((group) => (
+              <div key={group.id}>
+                <h3 className="text-xl font-bold mb-4">
+                  {group.title}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {group.areas.map((area) => (
+                    <div
+                      key={area.slug}
+                      className="bg-white rounded-xl shadow p-6 flex flex-col justify-between"
+                    >
+                      <div>
+                        <h4 className="font-bold text-lg mb-2">
+                          {area.name}
+                        </h4>
+
+                        <p className="text-sm text-gray-600 mb-4">
+                          معلومات حقيقية عن الأسعار، الخدمات،
+                          والمميزات والعيوب
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <Link
+                          href={`/areas/${area.slug}`}
+                          className="text-green-600 font-semibold"
+                        >
+                          استكشف المنطقة →
+                        </Link>
+
+                        <a
+                          href={`https://wa.me/201021732703?text=استفسار عن منطقة ${area.name}`}
+                          className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg"
+                        >
+                          واتساب
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+                 {/* ================= BLOG / SEO CONTENT ================= */}
+             <section className="py-16 bg-gray-100">
+      <div className="container mx-auto px-4 max-w-6xl">
+
+      <h2 className="text-2xl font-bold text-center mb-10">
+        دليل السكن والاستثمار في حدائق أكتوبر
+      </h2>
+
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <Link
+  href="/blog/choose-area-hadayek-october"
+  className="block bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition"
+>
+  <h3 className="text-lg font-bold mb-2">
+    كيف تختار المنطقة المناسبة داخل حدائق أكتوبر؟
+  </h3>
+
+  <p className="text-gray-600 text-sm">
+    اختيار المنطقة الصح أهم خطوة قبل شراء العقار.
+  </p>
+  <span className="mt-3 inline-block text-green-600 font-medium">
+  اقرأ المقال →
+</span>
+
+</Link>
+{/*
+      <div className="bg-white p-6 rounded-xl shadow">
+        <h3 className="font-bold mb-2">
+          لماذا حدائق أكتوبر من أفضل مناطق السكن حاليًا؟
+        </h3>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          حدائق أكتوبر من أسرع المناطق نموًا غرب القاهرة...
+        </p>
+      </div>
+
+      <div className="bg-white p-6 rounded-xl shadow">
+        <h3 className="font-bold mb-2">
+          أسعار العقارات في حدائق أكتوبر 2025
+        </h3>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          تختلف الأسعار حسب المنطقة ونوع العقار...
+        </p>
+      </div>
+*/}
+
+      <div className="bg-white p-6 rounded-xl shadow">
+        <h3 className="font-bold mb-2">
+          هل الشراء بدون صور عقارات قرار صحيح؟
+        </h3>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          نعم، لأن الصور غالبًا تكون مضللة أو قديمة...
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{/* ================= BLOG PREVIEW ================= */}
+{/*
+<section className="bg-gray-100 py-12">
+  <div className="max-w-6xl mx-auto px-4">
+    <h2 className="text-2xl font-bold mb-6">
+      مقالات عقارية مفيدة
+    </h2>
+
+    <div className="grid md:grid-cols-3 gap-6">
+      {blogPosts.map((post) => (
+        <div
+          key={post.slug}
+          className="bg-white p-6 rounded-xl shadow-sm"
+        >
+          <h3 className="font-semibold mb-2">
+            {post.title}
+          </h3>
+
+          <p className="text-sm text-gray-600 mb-4">
+            {post.excerpt}
+          </p>
+
+          <Link
+            href={`/blog/${post.slug}`}
+            className="text-green-600 font-medium hover:underline"
+          >
+            اقرأ المقال →
+          </Link>
+        </div>
+      ))}
+    </div>
+  </div>
+ </section>
+*/}
+
+      {/* ================= CTA ================= */}
+      <section className="bg-green-600 text-white py-16 text-center">
+        <h2 className="text-2xl font-bold mb-4">
+          ناوي تشتري بجد؟
+        </h2>
+        <p className="mb-6 opacity-90">
+          قولي ميزانيتك ونوع السكن
+          وهنرشح لك الأنسب بدون لف ولا تضليل
+        </p>
+
+        <a
+          href="https://wa.me/201021732703"
+          className="bg-white text-green-700 px-8 py-3 rounded-full font-bold"
+        >
+          تواصل الآن عبر واتساب
+        </a>
+      </section>
+
     </main>
   );
 }
-
-
-
-
-

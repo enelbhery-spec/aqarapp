@@ -32,24 +32,14 @@ export default function Header() {
           href="/"
           className="text-2xl font-extrabold text-green-700 hover:text-green-800 transition"
         >
-          وسيط عقاري أكتوبر
+           عقارات حدائق أكتوبر
         </Link>
 
         {/* Navigation */}
         <nav className="flex gap-6 text-sm font-semibold">
-          <Link
-            href="/properties"
-            className="text-gray-700 hover:text-green-700 transition relative after:absolute after:right-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-green-700 hover:after:w-full after:transition-all"
-          >
-            العقارات
-          </Link>
 
-          <Link
-            href="/add-property"
-            className="text-gray-700 hover:text-green-700 transition relative after:absolute after:right-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-green-700 hover:after:w-full after:transition-all"
-          >
-            أضف عقار
-          </Link>
+
+
 
           <Link
             href="/contact"
