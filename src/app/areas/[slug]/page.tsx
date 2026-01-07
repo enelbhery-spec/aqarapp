@@ -1,24 +1,10 @@
 import { notFound } from "next/navigation";
-import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
 import Link from "next/link";
 import AreaImageSlider from "@/components/AreaImageSlider";
-
-
-/* ================== TYPES ================== */
-type Area = {
-  name: string;
-  slug: string;
-  description?: string;
-  avgPrice?: string;
-  services?: string[];
-  mapQuery?: string;
-};
-
-/* ================== PAGE ================== */
-import { notFound } from "next/navigation";
 import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
 import type { Area } from "@/types/area";
 
+/* ================== PAGE ================== */
 export default function AreaPage({
   params,
 }: {
@@ -27,10 +13,10 @@ export default function AreaPage({
   const { slug } = params;
 
   // 🔍 البحث عن المنطقة
-  const selectedArea =
+  const selectedArea: Area | undefined =
     hadayekOctoberAreas
       .flatMap((group) => group.areas)
-      .find((area) => area.slug === slug) || null;
+      .find((area) => area.slug === slug);
 
   if (!selectedArea) {
     notFound();
@@ -38,18 +24,6 @@ export default function AreaPage({
 
   return (
     <main className="bg-gray-50 text-gray-800 min-h-screen">
-      <section className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">
-          {selectedArea.name}
-        </h1>
-
-        <p className="text-gray-600 leading-relaxed">
-          {selectedArea.description}
-        </p>
-      </section>
-    </main>
-  );
-}
 
       {/* ================= HERO ================= */}
       <section className="bg-gradient-to-bl from-green-600 via-green-500 to-emerald-500 text-white py-16">
@@ -63,7 +37,7 @@ export default function AreaPage({
         </div>
       </section>
 
-      {/* ================= IMAGES (Supabase فقط) ================= */}
+      {/* ================= IMAGES ================= */}
       <section className="py-10">
         <div className="container mx-auto px-4">
           <h2 className="text-xl font-bold mb-4">صور من المنطقة</h2>
@@ -86,7 +60,7 @@ export default function AreaPage({
 
             <h3 className="font-bold mb-3">متوسط الأسعار</h3>
             <p className="text-gray-700 mb-6">
-              {selectedArea.avgPrice ?? "متغير بالنسبة لكل منطقة"}
+              {selectedArea.avgPrice ?? "متغير حسب نوع العقار والمساحة"}
             </p>
 
             <h3 className="font-bold mb-3">الخدمات المتوفرة</h3>
@@ -139,31 +113,29 @@ export default function AreaPage({
             className="w-full h-96 rounded-xl border"
             loading="lazy"
             src={`https://www.google.com/maps?q=${
-              selectedArea.mapQuery || selectedArea.name + " حدائق أكتوبر"
+              selectedArea.mapQuery || `${selectedArea.name} حدائق أكتوبر`
             }&output=embed`}
           />
         </div>
       </section>
-      {/* ================= VIEW PROPERTIES BUTTON ================= */}
-<section className="py-12 text-center bg-white">
-  <h2 className="text-2xl font-bold mb-4">
-    عايز تشوف العقارات المتاحة في {selectedArea.name}؟
-  </h2>
 
-  <p className="text-gray-600 mb-6">
-    استعرض كل العقارات المتوفرة حاليًا داخل المنطقة مع التفاصيل الكاملة
-  </p>
+      {/* ================= VIEW PROPERTIES ================= */}
+      <section className="py-12 text-center bg-white">
+        <h2 className="text-2xl font-bold mb-4">
+          عايز تشوف العقارات المتاحة في {selectedArea.name}؟
+        </h2>
 
-  <Link
-  href={`/areas/${selectedArea.slug}/details`}
-  className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold"
->
-  عرض العقارات المتاحة
-</Link>
+        <p className="text-gray-600 mb-6">
+          استعرض كل العقارات المتوفرة حاليًا داخل المنطقة مع التفاصيل الكاملة
+        </p>
 
-
-</section>
-
+        <Link
+          href={`/areas/${selectedArea.slug}/details`}
+          className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold"
+        >
+          عرض العقارات المتاحة
+        </Link>
+      </section>
 
       {/* ================= CTA ================= */}
       <section className="py-12 text-center">
