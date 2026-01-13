@@ -7,8 +7,8 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title: {
-    default: "سوق العقارات | بيع وشراء وتأجير",
-    template: "%s | سوق العقارات",
+    default: "عقارات حدائق اكتوبر| بيع وشراء وتأجير",
+    template: "%s | عقارات حدائق اكتوبر",
   },
   description:
     "منصة سوق العقارات لعرض وطلب الشقق، الفلل، الأراضي، والإيجارات في جميع المحافظات بسهولة وأمان.",
@@ -93,7 +93,8 @@ export default function RootLayout({
               page_path: window.location.pathname,
             });
           `}
-        </Script>     </head>
+        </Script>
+         </head>
       <body className="bg-gray-50 text-gray-800">
         <Header />
         <main className="min-h-screen">{children}</main>

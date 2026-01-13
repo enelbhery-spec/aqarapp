@@ -8,7 +8,7 @@ export default function Footer() {
         {/* عن الموقع */}
         <div className="text-right">
           <h3 className="text-lg font-extrabold mb-4">
-            وسيط عقاري أكتوبر
+            عقارات حدائق أكتوبر
           </h3>
           <p className="text-sm text-green-100 leading-relaxed">
             منصة عقارية بسيطة لعرض وطلب العقارات داخل مدينة 6 أكتوبر فقط،
@@ -26,19 +26,13 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/properties" className="hover:underline">
-                العقارات المعروضة
-              </Link>
+
             </li>
             <li>
-              <Link href="/add-property" className="hover:underline">
-                أضف عقارك
-              </Link>
+
             </li>
             <li>
-              <Link href="/property_requests" className="hover:underline">
-                اطلب عقار
-              </Link>
+
             </li>
           </ul>
         </div>
