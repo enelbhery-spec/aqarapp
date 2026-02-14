@@ -34,6 +34,8 @@ export default function Header() {
         >
            عقارات حدائق أكتوبر
         </Link>
+          <Link href="/videos"> فديوهات العقارات</Link> {/* 👈 أضف السطر ده */}
+
 
         {/* Navigation */}
         <nav className="flex gap-6 text-sm font-semibold">
@@ -41,12 +43,7 @@ export default function Header() {
 
 
 
-          <Link
-            href="/contact"
-            className="text-gray-700 hover:text-green-700 transition relative after:absolute after:right-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-green-700 hover:after:w-full after:transition-all"
-          >
-            تواصل
-          </Link>
+
         </nav>
       </div>
     </header>

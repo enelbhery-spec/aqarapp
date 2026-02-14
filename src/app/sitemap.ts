@@ -15,16 +15,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: baseUrl,
       lastModified: now,
+      changeFrequency: "daily",
       priority: 1,
+    },
+    {
+      url: `${baseUrl}/videos`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/areas`,
       lastModified: now,
+      changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/articles`,
       lastModified: now,
+      changeFrequency: "weekly",
       priority: 0.75,
     },
   ];
@@ -35,16 +44,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       {
         url: `${baseUrl}/areas/${area}`,
         lastModified: now,
+        changeFrequency: "weekly",
         priority: 0.75,
       },
       {
         url: `${baseUrl}/areas/${area}/sale`,
         lastModified: now,
+        changeFrequency: "daily",
         priority: 0.7,
       },
       {
         url: `${baseUrl}/areas/${area}/rent`,
         lastModified: now,
+        changeFrequency: "daily",
         priority: 0.7,
       }
     );
@@ -55,6 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     urls.push({
       url: `${baseUrl}/articles/${slug}`,
       lastModified: now,
+      changeFrequency: "monthly",
       priority: 0.65,
     });
   });
