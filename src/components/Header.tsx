@@ -32,7 +32,7 @@ export default function Header() {
           href="/"
           className="text-2xl font-extrabold text-green-700 hover:text-green-800 transition"
         >
-           عقارات حدائق أكتوبر
+           عقارات أكتوبر
         </Link>
           <Link href="/videos"> فديوهات العقارات</Link> {/* 👈 أضف السطر ده */}
 

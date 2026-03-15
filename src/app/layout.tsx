@@ -6,6 +6,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import Script from "next/script";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("http://localhost:3000"),
   title: {
     default: "عقارات حدائق اكتوبر| بيع وشراء وتأجير",
     template: "%s | عقارات حدائق اكتوبر",

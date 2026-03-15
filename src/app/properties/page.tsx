@@ -1,83 +1,57 @@
-import { createClient } from "@supabase/supabase-js";
+import { readFile } from "fs/promises";
+import path from "path";
+import Link from "next/link";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const ITEMS_PER_PAGE = 6;
 
-export default async function PropertiesPage() {
-  const { data: properties, error } = await supabase
-    .from("properties")
-    .select("*")
-    .eq("status", "approved")
-    .order("created_at", { ascending: false });
+export default async function PropertiesPage({
+  searchParams,
+}: {
+  searchParams: { page?: string };
+}) {
+  const filePath = path.join(process.cwd(), "public", "data1.json");
+  const file = await readFile(filePath, "utf8");
+  const allProperties = JSON.parse(file);
 
-  if (error) {
-    return <div>حدث خطأ أثناء تحميل العقارات</div>;
-  }
+  const currentPage = Number(searchParams.page) || 1;
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginated = allProperties.slice(start, start + ITEMS_PER_PAGE);
 
-  if (!properties || properties.length === 0) {
-    return <div>لا توجد عقارات معروضة حاليًا</div>;
-  }
+  const totalPages = Math.ceil(allProperties.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {properties.map((property) => {
-        let imageUrl: string | null = null;
+    <div className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {paginated.map((property: any) => (
+          <div key={property.listingId} className="border rounded-xl p-4">
+            <h3 className="font-bold">{property.imageAlt}</h3>
+            <p>{property.location}</p>
+            <p className="text-green-600 font-bold">
+              {property.price?.toLocaleString()} جنيه
+            </p>
 
-        try {
-          const imagesArray = Array.isArray(property.images)
-            ? property.images
-            : JSON.parse(property.images || "[]");
-
-          imageUrl = imagesArray[0] || null;
-        } catch {
-          imageUrl = null;
-        }
-
-        return (
-          <div
-            key={property.id}
-            className="rounded-xl border shadow-sm overflow-hidden bg-white"
-          >
-            {/* Image */}
-            <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt={property.title}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-gray-400">لا توجد صورة</span>
-              )}
-            </div>
-
-            <div className="p-4 text-right">
-              <h3 className="font-bold text-lg">{property.title}</h3>
-
-              <p className="text-sm text-gray-600">
-                {property.location || "غير محدد"}
-              </p>
-
-              <p className="text-green-600 font-bold mt-2">
-                {property.price?.toLocaleString()} جنيه
-              </p>
-
-              <div className="flex gap-2 mt-4">
-                <a
-                  href={`/properties/${property.id}`}
-                  className="flex-1 border border-green-600 text-green-600 text-center py-2 rounded-lg hover:bg-green-50"
-                >
-                  تفاصيل
-                </a>
-
-
-              </div>
-            </div>
+            <Link
+              href={`/properties/${property.listingId}`}
+              className="text-blue-600"
+            >
+              تفاصيل
+            </Link>
           </div>
-        );
-      })}
+        ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex gap-3 mt-8">
+        {Array.from({ length: totalPages }).map((_, i) => (
+          <Link
+            key={i}
+            href={`/properties?page=${i + 1}`}
+            className="px-4 py-2 border rounded"
+          >
+            {i + 1}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

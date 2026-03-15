@@ -1,76 +1,40 @@
-import { MetadataRoute } from "next";
+
+import { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://aqarapp.vercel.app";
-  const now = new Date();
 
-  const areas = ["hadayek-october"];
-
-  const articles = [
-    "buy-without-photos",
-    "choose-area-hadayek-october",
-  ];
-
-  const urls: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/videos`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/areas`,
-      lastModified: now,
+  return [
+{
+      url: "https://aqarapp.vercel.app",
+      lastModified: new Date("2026-03-16T00:41:22.905404"),
       changeFrequency: "weekly",
       priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/articles`,
-      lastModified: now,
+    },{
+      url: "https://aqarapp.vercel.app/areas",
+      lastModified: new Date("2026-03-16T00:41:22.905404"),
       changeFrequency: "weekly",
-      priority: 0.75,
-    },
-  ];
+      priority: 0.8,
+    },{
+      url: "https://aqarapp.vercel.app/videos",
+      lastModified: new Date("2026-03-16T00:41:22.905404"),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },{
+      url: "https://aqarapp.vercel.app/areas/hadayek-october",
+      lastModified: new Date("2026-03-16T00:41:22.905404"),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },{
+      url: "https://aqarapp.vercel.app/areas/italian-district",
+      lastModified: new Date("2026-03-16T00:41:22.905404"),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },{
+      url: "https://aqarapp.vercel.app/areas/7th-district",
+      lastModified: new Date("2026-03-16T00:41:22.905404"),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }
+  ]
 
-  // صفحات المناطق
-  areas.forEach((area) => {
-    urls.push(
-      {
-        url: `${baseUrl}/areas/${area}`,
-        lastModified: now,
-        changeFrequency: "weekly",
-        priority: 0.75,
-      },
-      {
-        url: `${baseUrl}/areas/${area}/sale`,
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: 0.7,
-      },
-      {
-        url: `${baseUrl}/areas/${area}/rent`,
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: 0.7,
-      }
-    );
-  });
-
-  // صفحات المقالات
-  articles.forEach((slug) => {
-    urls.push({
-      url: `${baseUrl}/articles/${slug}`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.65,
-    });
-  });
-
-  return urls;
 }
