@@ -2,9 +2,12 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { notFound } from "next/navigation";
 
-export async function generateMetadata({ params }: any) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+
+  const { id } = await params;
+
   return {
-    title: `تفاصيل عقار ${params.id}`,
+    title: `تفاصيل عقار ${id}`,
     description: "تفاصيل كاملة عن العقار",
   };
 }
@@ -12,14 +15,17 @@ export async function generateMetadata({ params }: any) {
 export default async function PropertyDetails({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+
+  const { id } = await params;
+
   const filePath = path.join(process.cwd(), "public", "data1.json");
   const file = await readFile(filePath, "utf8");
   const properties = JSON.parse(file);
 
   const property = properties.find(
-    (p: any) => String(p.listingId) === params.id
+    (p: any) => String(p.listingId) === id
   );
 
   if (!property) return notFound();
