@@ -1,31 +1,12 @@
-import { readFile } from "fs/promises";
-import path from "path";
+import { notFound } from "next/navigation";
 
-export default async function AreaPage({
-  params,
-}: {
-  params: { area: string };
+// ✅ تصحيح الأنواع لتوافق Next.js 15 ومنع خطأ الـ Build
+export default async function AreaPage(props: {
+  params: Promise<{ area: string }>;
 }) {
-  const filePath = path.join(process.cwd(), "public", "data1.json");
-  const file = await readFile(filePath, "utf8");
-  const properties = JSON.parse(file);
+  // هذا السطر يحل مشكلة الـ Type Error في Vercel
+  const params = await props.params;
 
-  const filtered = properties.filter(
-    (p: any) => p.area?.toLowerCase() === params.area.toLowerCase()
-  );
-
-  if (filtered.length === 0) {
-    return <div>لا توجد عقارات في هذه المنطقة</div>;
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-      {filtered.map((property: any) => (
-        <div key={property.listingId} className="border rounded-xl p-4">
-          <h3 className="font-bold">{property.imageAlt}</h3>
-          <p>{property.location}</p>
-        </div>
-      ))}
-    </div>
-  );
+  // بما أنك ألغيت المناطق، سنقوم بتحويل المستخدم للرئيسية أو إظهار 404
+  return notFound();
 }
