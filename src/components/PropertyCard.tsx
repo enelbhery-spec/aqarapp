@@ -1,59 +1,89 @@
+import { Phone, MessageCircle, MapPin, Home } from "lucide-react"; // تأكد من تثبيت lucide-react
+
 type Property = {
   id: number;
   title: string;
-  location: string;
+  address: string;
   price: number;
   type: string;
-  area: number;
-  rooms: number;
-  bathrooms: number;
-  floor: number;
-  purpose: "rent" | "sale";
+  listing_type: string;
+  phone: string;
+  images: string[];
 };
 
 export default function PropertyCard({ property }: { property: Property }) {
-  return (
-    <div className="bg-white rounded-xl shadow p-6 flex flex-col justify-between">
+  const imageUrl = property.images?.[0] || "/placeholder.jpg";
+  const formattedPrice = property.price?.toLocaleString() || "غير محدد";
+  const phone = property.phone?.replace(/\D/g, "") || "";
 
-      {/* العنوان */}
-      <div>
-        <h3 className="font-bold text-lg mb-1">
+  return (
+    <div className="group bg-white rounded-3xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col h-full">
+      
+      {/* قسم الصورة الذكي */}
+      <div className="relative overflow-hidden aspect-[4/3]">
+        <img
+          src={imageUrl}
+          alt={property.title}
+          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+        />
+        
+        {/* الطبقة الظلية والبيانات فوق الصورة */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-md ${
+            property.listing_type === "إيجار" ? "bg-blue-600/90 text-white" : "bg-emerald-600/90 text-white"
+          }`}>
+            {property.listing_type}
+          </span>
+        </div>
+
+        {/* السعر فوق الصورة (اختياري لرفع مستوى التصميم) */}
+        <div className="absolute bottom-4 right-4">
+           <p className="text-white font-bold text-xl drop-shadow-md">
+            {formattedPrice} <span className="text-sm font-light">ج.م</span>
+          </p>
+        </div>
+      </div>
+
+      {/* المحتوى التفصيلي */}
+      <div className="p-5 flex flex-col flex-grow">
+        
+        <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-2">
+          <Home size={12} />
+          {property.type}
+        </div>
+
+        <h3 className="font-bold text-gray-800 text-base leading-snug line-clamp-2 mb-3 group-hover:text-emerald-700 transition-colors">
           {property.title}
         </h3>
 
-        <p className="text-sm text-gray-600 mb-3">
-          📍 {property.location}
-        </p>
+        <div className="flex items-start gap-1.5 text-gray-500 text-sm mb-auto">
+          <MapPin size={16} className="shrink-0 text-gray-400" />
+          <span className="line-clamp-1">{property.address}</span>
+        </div>
 
-        {/* التفاصيل */}
-        <ul className="text-sm text-gray-700 space-y-1">
-          <li>🏠 النوع: {property.type}</li>
-          <li>📐 المساحة: {property.area} م²</li>
-          <li>🛏 غرف النوم: {property.rooms}</li>
-          <li>🚿 الحمامات: {property.bathrooms}</li>
-          <li>🏢 الدور: {property.floor}</li>
-          <li>
-            💼 الغرض:{" "}
-            <span className="font-semibold">
-              {property.purpose === "rent" ? "إيجار" : "بيع"}
-            </span>
-          </li>
-        </ul>
+        {/* أزرار التفاعل - مودرن */}
+        <div className="flex gap-3 mt-6">
+          <a
+            href={phone ? `tel:${phone}` : "#"}
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-900 text-white py-3 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors duration-300 shadow-sm"
+          >
+            <Phone size={16} />
+            اتصال
+          </a>
 
-        {/* السعر */}
-        <p className="text-green-600 font-bold text-lg mt-4">
-          {property.price.toLocaleString()} جنيه
-        </p>
+          <a
+            href={phone ? `https://wa.me/${phone}` : "#"}
+            target="_blank"
+            className="flex items-center justify-center bg-emerald-100 text-emerald-700 p-3 rounded-xl hover:bg-emerald-200 transition-all duration-300"
+            title="تواصل عبر واتساب"
+          >
+            <MessageCircle size={20} />
+          </a>
+        </div>
+
       </div>
-
-      {/* زر التواصل */}
-      <a
-        href={`https://wa.me/201021732703?text=مهتم بعقار: ${property.title}`}
-        target="_blank"
-        className="mt-5 text-center bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition"
-      >
-        تواصل للجادين فقط
-      </a>
     </div>
   );
 }

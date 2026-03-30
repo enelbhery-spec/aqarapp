@@ -34,7 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-, "src/components/unused/headline-generator.tsx.bak", "src/components/sections/headline-generator-section.bah"  ],
+, "src/components/unused/headline-generator.tsx.bak", "src/components/sections/headline-generator-section.bah", "tailwind.config.ts"  ],
   "exclude": [
     "node_modules"
   ]
