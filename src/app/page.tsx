@@ -12,11 +12,13 @@ const supabase = createClient(
 // تحديد عدد العقارات في كل صفحة
 const ITEMS_PER_PAGE = 9;
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: { page?: string };
+// ✅ التعديل: تعريف البروبس ليتوافق مع Next.js 15 (searchParams as Promise)
+export default async function HomePage(props: {
+  searchParams: Promise<{ page?: string }>;
 }) {
+  // ✅ انتظار الـ Promise للحصول على البيانات
+  const searchParams = await props.searchParams;
+  
   // حساب الصفحة الحالية (الافتراضية هي 1)
   const currentPage = Number(searchParams.page) || 1;
   
@@ -27,7 +29,7 @@ export default async function HomePage({
   // ✅ جلب البيانات مع حساب العدد الإجمالي (count)
   const { data: properties, error, count } = await supabase
     .from("properties")
-    .select("*", { count: "exact" })
+    .select("*", { count: "exact" }) 
     .order("id", { ascending: false })
     .range(from, to);
 
@@ -40,15 +42,13 @@ export default async function HomePage({
 
   return (
     <main className="bg-gray-50 text-gray-800">
-      {/* ================= HERO SECTION ================= */}
+      {/* ================= HERO ================= */}
       <section className="bg-gradient-to-bl from-green-600 via-green-500 to-emerald-500 text-white py-20">
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <h1 className="text-4xl font-bold mb-4">
             ابحث بذكاء عن عقارك في حدائق أكتوبر
           </h1>
-          <p className="text-green-50 opacity-90">
-            دليلك العقاري الشامل لأفضل المجمعات السكنية والمناطق
-          </p>
+          <p className="text-green-50 opacity-90">دليلك العقاري الشامل لأفضل المجمعات السكنية والمناطق</p>
         </div>
       </section>
 
@@ -137,6 +137,30 @@ export default async function HomePage({
         </div>
       </section>
 
+      {/* ================= AREAS SECTION ================= */}
+      <section className="py-16 bg-gray-100 border-t border-gray-200">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold mb-10 text-center">
+            تصفح حسب المنطقة في حدائق أكتوبر
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {hadayekOctoberAreas.map((area) => (
+              <Link 
+                key={area.id} 
+                href={`/areas/${area.id}`}
+                className="bg-white p-5 rounded-2xl shadow-sm border border-transparent hover:border-green-400 hover:shadow-md transition-all group flex items-center justify-between"
+              >
+                <span className="text-gray-300 group-hover:text-green-400 text-xl font-light">
+                  {"←"}
+                </span>
+                <h3 className="font-bold text-gray-700 group-hover:text-green-600 transition-colors">
+                  {area.title}
+                </h3>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
