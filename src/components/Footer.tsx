@@ -8,7 +8,7 @@ export default function Footer() {
         {/* عن الموقع */}
         <div className="text-right">
           <h3 className="text-lg font-extrabold mb-4">
-            عقارات حدائق أكتوبر
+            ترند عقار
           </h3>
           <p className="text-sm text-green-100 leading-relaxed">
             منصة عقارية بسيطة لعرض وطلب العقارات داخل مدينة 6 أكتوبر فقط،

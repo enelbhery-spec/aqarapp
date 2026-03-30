@@ -6,27 +6,30 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
+  // تحديث الرابط الأساسي للدومين الجديد
+  metadataBase: new URL("https://www.trand-aqar.online"),
   title: {
-    default: "عقارات حدائق اكتوبر| بيع وشراء وتأجير",
-    template: "%s | عقارات حدائق اكتوبر",
+    // جعل العنوان عاماً وشاملاً
+    default: "تريند عقار | منصة بيع وشراء وتأجير العقارات",
+    template: "%s | تريند عقار",
   },
   description:
-    "منصة سوق العقارات لعرض وطلب الشقق، الفلل، الأراضي، والإيجارات في جميع المحافظات بسهولة وأمان.",
+    "تريند عقار هي منصتك الأولى للبحث عن العقارات، شقق للبيع، فلل، أراضي، وإيجارات في كافة المحافظات. اعرض عقارك الآن بلمسة زر.",
   keywords: [
-    "عقارات",
+    "تريند عقار",
+    "عقارات مصر",
     "بيع شقق",
     "شراء شقق",
-    "إيجار",
+    "إيجار عقارات",
     "شقق للبيع",
     "شقق للإيجار",
-    "فلل",
-    "أراضي",
-    "سوق العقارات",
+    "فلل للبيع",
+    "أراضي للبناء",
+    "سوق العقارات العربي",
   ],
-  authors: [{ name: "سوق العقارات" }],
-  creator: "سوق العقارات",
-  publisher: "سوق العقارات",
+  authors: [{ name: "تريند عقار" }],
+  creator: "تريند عقار",
+  publisher: "تريند عقار",
 
   other: {
     "google-adsense-account": "ca-pub-4973672854580770",
@@ -41,30 +44,31 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://aqarapp.vercel.app",
+    // التحديث للرابط الرسمي الجديد
+    canonical: "https://www.trand-aqar.online",
   },
   openGraph: {
-    title: "سوق العقارات | بيع وشراء وتأجير",
+    title: "تريند عقار | سوق العقارات الشامل",
     description:
-      "اعرض عقارك أو ابحث عن شقة، فيلا أو أرض بسهولة عبر منصة سوق العقارات.",
-    url: "https://aqarapp.vercel.app",
-    siteName: "سوق العقارات",
+      "ابحث عن عقارك المثالي أو اعرض وحدتك للبيع والإيجار عبر منصة تريند عقار الذكية.",
+    url: "https://www.trand-aqar.online",
+    siteName: "تريند عقار",
     locale: "ar_EG",
     type: "website",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/og-image.jpg", // تأكد من وجود صورة تحمل الهوية الجديدة بهذا الاسم
         width: 1200,
         height: 630,
-        alt: "سوق العقارات",
+        alt: "تريند عقار - وجهتك العقارية",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "سوق العقارات",
-    description: "أفضل منصة لعرض وطلب العقارات في مصر",
-    images: ["https://aqarapp.vercel.app/og-image.jpg"],
+    title: "تريند عقار",
+    description: "أفضل منصة لعرض وطلب العقارات في مصر والوطن العربي",
+    images: ["https://www.trand-aqar.online/og-image.jpg"],
   },
   icons: {
     icon: "/icon.png",
@@ -80,8 +84,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-    <head>
-<Script
+      <head>
+        {/* Google Analytics - تأكد من تحديث المعرف إذا قمت بإنشاء Property جديدة للدومين الجديد */}
+        <Script
           src={`https://www.googletagmanager.com/gtag/js?id=G-1QVGGKVV8F`}
           strategy="afterInteractive"
         />
@@ -95,7 +100,7 @@ export default function RootLayout({
             });
           `}
         </Script>
-         </head>
+      </head>
       <body className="bg-gray-50 text-gray-800">
         <Header />
         <main className="min-h-screen">{children}</main>

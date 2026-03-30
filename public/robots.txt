@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aqarapp.vercel.app/sitemap.xml
+# تحديد مسار السايت ماب الجديد
+Sitemap: https://www.trand-aqar.online/sitemap.xml
