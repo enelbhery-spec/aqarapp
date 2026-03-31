@@ -1,52 +1,84 @@
-import { readFile } from "fs/promises";
-import path from "path";
 import { notFound } from "next/navigation";
+import { createClient } from "@/utils/supabase/server";
+import PropertyImagesSlider from "@/components/PropertyImagesSlider";
 
-// دالة الـ Metadata
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  // 1. فك تشفير المعرف (ID) من الرابط
   const { id } = await params;
-  return {
-    title: `تفاصيل عقار ${id}`,
-    description: "تفاصيل كاملة عن العقار",
-  };
-}
+  const supabase = await createClient();
 
-// المكون الرئيسي للصفحة
-export default async function PropertyDetails({
-  params,
-}: {
-  params: Promise<{ id: string }>; // هنا تم تصحيح تعريف النوع
-}) {
-  // استخراج الـ id بشكل صحيح من الـ Promise
-  const { id } = await params;
+  // 2. تحويل المعرف لرقم صحيح لمطابقة الداتابيز
+  const propertyId = parseInt(id);
+  if (isNaN(propertyId)) return notFound();
 
-  try {
-    // قراءة البيانات من الملف
-    const filePath = path.join(process.cwd(), "public", "data1.json");
-    const file = await readFile(filePath, "utf8");
-    const properties = JSON.parse(file);
+  // 3. جلب بيانات العقار المحدد من جدول properties
+  const { data: property, error } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("id", propertyId)
+    .single();
 
-    // البحث عن العقار
-    const property = properties.find(
-      (p: any) => String(p.listingId) === id
-    );
+  // إذا حدث خطأ في الـ fetch أو لم يوجد العقار
+  if (error || !property) return notFound();
 
-    // إذا لم يتم العثور على العقار
-    if (!property) return notFound();
+  // 4. تجهيز مصفوفة الصور للعرض في السلايدر
+  const images = property.images && Array.isArray(property.images) 
+    ? property.images 
+    : [property.thumbnail].filter(Boolean);
 
-    return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900">{property.imageAlt}</h1>
-        <div className="mt-6 bg-white p-6 rounded-2xl shadow-sm border">
-          <p className="text-gray-600 leading-relaxed">{property.description}</p>
-          <p className="mt-4 text-2xl text-green-600 font-bold">
-            {property.price?.toLocaleString()} جنيه
-          </p>
+  return (
+    <main className="min-h-screen bg-white pt-24 pb-12" dir="rtl">
+      <div className="max-w-5xl mx-auto px-4">
+        
+        {/* عرض الصور باستخدام السلايدر التفاعلي */}
+        <div className="mb-10">
+          <PropertyImagesSlider images={images} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="lg:col-span-2">
+            <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
+              {property.title}
+            </h1>
+            
+            {/* عرض وصف العقار بدقة */}
+            <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">تفاصيل إضافية</h2>
+              <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
+                {property.description || "لا يوجد وصف متاح لهذا العقار."}
+              </p>
+            </div>
+          </div>
+
+          {/* قسم السعر وأزرار التواصل الديناميكية */}
+          <div className="space-y-6">
+            <div className="bg-emerald-600 p-8 rounded-[2.5rem] text-white shadow-2xl">
+              <p className="text-sm opacity-80 mb-2 font-bold">السعر المطلوب</p>
+              <h2 className="text-4xl font-black">
+                {property.price?.toLocaleString()} <span className="text-lg font-normal">ج.م</span>
+              </h2>
+            </div>
+
+            {/* زر الاتصال: يستخدم الحقل phone من الداتابيز مباشرة */}
+            <a 
+              href={`tel:${property.phone}`} 
+              className="block w-full text-center bg-gray-900 text-white py-5 rounded-2xl font-bold text-xl hover:bg-black transition-all shadow-lg"
+            >
+              اتصال هاتفي
+            </a>
+
+            {/* زر الواتساب: يستخدم الحقل phone من الداتابيز لضمان التغيير لكل عقار */}
+            <a 
+              href={`https://wa.me/${property.phone}`} 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center bg-emerald-100 text-emerald-700 py-5 rounded-2xl font-bold text-xl hover:bg-emerald-200 transition-all shadow-md flex items-center justify-center gap-2"
+            >
+              تواصل عبر واتساب
+            </a>
+          </div>
         </div>
       </div>
-    );
-  } catch (error) {
-    console.error("Error reading data:", error);
-    return notFound();
-  }
+    </main>
+  );
 }
