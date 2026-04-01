@@ -1,6 +1,6 @@
 import Link from "next/link";
 import PropertyCard from "@/components/PropertyCard";
-import { createClient } from "@/utils/supabase/server"; // ✅ التأكد من استخدام العميل الصحيح
+import { createClient } from "@/utils/supabase/server";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -12,14 +12,20 @@ export default async function HomePage(props: {
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
-  // إنشاء عميل Supabase داخل الدالة لضمان جلب البيانات في كل طلب
   const supabase = await createClient();
 
-  // جلب البيانات مع التأكد من ترتيبها
+  // 1. جلب العقارات المميزة
+  const { data: featuredProperties } = await supabase
+    .from("featured_properties")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(3);
+
+  // 2. جلب العقارات العامة
   const { data: properties, error, count } = await supabase
     .from("properties")
-    .select("*", { count: "exact" }) 
-    .order("created_at", { ascending: false }) // الترتيب حسب تاريخ الإضافة
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
     .range(from, to);
 
   if (error) {
@@ -36,9 +42,36 @@ export default async function HomePage(props: {
         <p className="opacity-90">دليلك العقاري الشامل لأفضل المجمعات السكنية</p>
       </section>
 
-      {/* Properties Grid */}
+      {/* 🚀 قسم العقارات المميزة - تم إصلاح الإظهار هنا */}
+      {featuredProperties && featuredProperties.length > 0 && (
+        <section className="py-12 bg-emerald-50/50 border-b">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-emerald-800 flex items-center gap-2">
+                <span className="text-3xl">⭐</span> عقارات مميزة نوصي بها
+              </h2>
+              <span className="bg-emerald-200 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                خاص بنا
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProperties.map((property: any) => (
+                <div key={property.id} className="relative transform hover:scale-[1.02] transition-transform duration-300">
+                  {/* علامة تمييز على الكرت */}
+                  
+                  {/* ✅ السطر الناقص كان هنا: استدعاء المكون وتمرير البيانات له */}
+                  <PropertyCard property={property} isFeatured={true} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* العقارات العامة Grid */}
       <section className="py-16 container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-10 text-center">أحدث العقارات المضافة</h2>
+        <h2 className="text-3xl font-bold mb-10 text-center text-gray-700">أحدث الإضافات</h2>
 
         {(!properties || properties.length === 0) ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">

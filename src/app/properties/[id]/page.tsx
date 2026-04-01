@@ -11,14 +11,28 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const propertyId = parseInt(id);
   if (isNaN(propertyId)) return notFound();
 
-  // 3. جلب بيانات العقار المحدد من جدول properties
-  const { data: property, error } = await supabase
-    .from("properties")
+  // --- 🚀 الخطوة الجديدة: البحث في الجدولين ---
+  
+  // أولاً: محاولة جلب البيانات من جدول العقارات المميزة (عقاراتك اليدوية)
+  let { data: property, error } = await supabase
+    .from("featured_properties")
     .select("*")
     .eq("id", propertyId)
     .single();
 
-  // إذا حدث خطأ في الـ fetch أو لم يوجد العقار
+  // ثانياً: إذا لم يجد العقار في المميزة، ابحث في الجدول العام (إكسل)
+  if (!property) {
+    const { data: generalProperty, error: generalError } = await supabase
+      .from("properties")
+      .select("*")
+      .eq("id", propertyId)
+      .single();
+    
+    property = generalProperty;
+    error = generalError;
+  }
+
+  // إذا لم يوجد في أي من الجدولين
   if (error || !property) return notFound();
 
   // 4. تجهيز مصفوفة الصور للعرض في السلايدر
