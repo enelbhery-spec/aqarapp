@@ -42,7 +42,7 @@ export default function Header() {
             className="rounded-lg shadow-sm group-hover:scale-105 transition-transform"
           />
           <span className="text-2xl font-extrabold text-green-700 group-hover:text-green-800 transition">
-            عقار ترند - trand aqar
+             trand aqar
           </span>
         </Link>
 
