@@ -1,6 +1,8 @@
 import Link from "next/link";
 import PropertyCard from "@/components/PropertyCard";
 import { createClient } from "@/utils/supabase/server";
+// استيراد بيانات المناطق الخاصة بك
+import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -42,7 +44,7 @@ export default async function HomePage(props: {
         <p className="opacity-90">دليلك العقاري الشامل لأفضل المجمعات السكنية</p>
       </section>
 
-      {/* 🚀 قسم العقارات المميزة - تم إصلاح الإظهار هنا */}
+      {/* 🚀 قسم العقارات المميزة */}
       {featuredProperties && featuredProperties.length > 0 && (
         <section className="py-12 bg-emerald-50/50 border-b">
           <div className="container mx-auto px-4">
@@ -51,16 +53,13 @@ export default async function HomePage(props: {
                 <span className="text-3xl">⭐</span> عقارات مميزة نوصي بها
               </h2>
               <span className="bg-emerald-200 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                خاص بنا
+                
               </span>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProperties.map((property: any) => (
                 <div key={property.id} className="relative transform hover:scale-[1.02] transition-transform duration-300">
-                  {/* علامة تمييز على الكرت */}
-                  
-                  {/* ✅ السطر الناقص كان هنا: استدعاء المكون وتمرير البيانات له */}
                   <PropertyCard property={property} isFeatured={true} />
                 </div>
               ))}
@@ -74,7 +73,7 @@ export default async function HomePage(props: {
         <h2 className="text-3xl font-bold mb-10 text-center text-gray-700">أحدث الإضافات</h2>
 
         {(!properties || properties.length === 0) ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
+          <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
              <p className="text-gray-500 text-lg">لا توجد عقارات متاحة حالياً</p>
           </div>
         ) : (
@@ -114,6 +113,54 @@ export default async function HomePage(props: {
             </Link>
           </div>
         )}
+      </section>
+
+      {/* ✅ قسم المناطق المعدل بحواف احترافية */}
+      <section className="py-20 bg-white border-t">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">استكشف المناطق والكمبوندات</h2>
+            <p className="text-gray-500">دليلك الكامل لأحياء حدائق أكتوبر</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {hadayekOctoberAreas[0].areas.slice(0, 4).map((area) => (
+              <Link 
+                key={area.slug} 
+                href={`/areas/${area.slug}`}
+                // ✅ تم تغيير الحواف من rounded-[2rem] إلى rounded-2xl لشكل أكثر حدة واحترافية
+                className="group relative h-48 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100"
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/90 via-emerald-900/30 to-transparent z-10" />
+                
+                {/* خلفية ناعمة */}
+                <div className="absolute inset-0 bg-slate-100 group-hover:scale-105 transition-transform duration-700" />
+
+                <div className="absolute bottom-5 right-5 z-20 text-right" dir="rtl">
+                  <h3 className="text-white text-lg font-bold mb-0.5">{area.name}</h3>
+                  <p className="text-emerald-200 text-xs font-medium opacity-90">عرض التفاصيل ←</p>
+                </div>
+
+                {/* أيقونة تفاعلية ناعمة */}
+                <div className="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-sm p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link 
+              href="/areas" 
+              className="inline-flex items-center gap-2 text-emerald-700 font-bold hover:text-emerald-500 transition-colors"
+            >
+              عرض كافة مناطق حدائق أكتوبر
+              <span className="text-xl">←</span>
+            </Link>
+          </div>
+        </div>
       </section>
     </main>
   );

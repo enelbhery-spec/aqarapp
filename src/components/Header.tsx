@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image"; // استيراد مكون الصور
 import { useEffect, useState } from "react";
 
 export default function Header() {
@@ -21,30 +22,42 @@ export default function Header() {
         sticky top-0 z-50
         transition-all duration-300
         ${scrolled
-          ? "bg-white/90 backdrop-blur shadow-md"
-          : "bg-white"}
+          ? "bg-white/90 backdrop-blur shadow-md py-2" // تقليل الحجم عند السكرول
+          : "bg-white py-4"}
       `}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
 
-        {/* Logo / Title */}
+        {/* Logo / Title - التعديل هنا ليرجع للرئيسية */}
         <Link
-          href="/"
-          className="text-2xl font-extrabold text-green-700 hover:text-green-800 transition"
+          href="/" 
+          className="flex items-center gap-2 group"
         >
-           trand-aqar
+          {/* عرض الأيقونة من مجلد public */}
+          <Image 
+            src="/icon.png" 
+            alt="Logo" 
+            width={35} 
+            height={35} 
+            className="rounded-lg shadow-sm group-hover:scale-105 transition-transform"
+          />
+          <span className="text-2xl font-extrabold text-green-700 group-hover:text-green-800 transition">
+            عقار ترند - trand aqar
+          </span>
         </Link>
-          <Link href="/videos"> فديوهات العقارات</Link> {/* 👈 أضف السطر ده */}
-
 
         {/* Navigation */}
-        <nav className="flex gap-6 text-sm font-semibold">
-
-
-
-
-
+        <nav className="flex items-center gap-8">
+          <Link 
+            href="/videos" 
+            className="text-gray-700 hover:text-green-600 font-bold transition-colors border-b-2 border-transparent hover:border-green-600 pb-1"
+          >
+             فيديوهات العقارات
+          </Link>
+          
+          {/* يمكنك إضافة روابط أخرى هنا لاحقاً */}
         </nav>
+
       </div>
     </header>
   );
