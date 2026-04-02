@@ -83,54 +83,6 @@ export const hadayekOctoberAreas: AreaCategory[] = [
       },
     ],
   },
-  {
-    id: "elsiahia",
-    title: "المناطق السياحية",
-    areas: [
-      {
-        name: "السياحية أ",
-        slug: "touristic-a", // ⚠️ لازم تعمل فولدر بنفس الاسم في Supabase
-        description:
-          "السياحية أ من المناطق المميزة في حدائق أكتوبر، قريبة من المحاور الرئيسية وتناسب السكن والاستثمار.",
-        avgPrice: "من 1,300,000 إلى 2,200,000 جنيه",
-        services: ["مدارس", "مواصلات", "مناطق خدمية"],
-        mapQuery: "Touristic Area A Hadayek October",
-        propertiesCount: 110,
-        avgPriceValue: 1800,
-        typesCount: 4,
-        recentAds: 16,
-      },
-    ],
-  },
-  {
-    id: "social-housing",
-    title: "مناطق الإسكان الاجتماعي",
-    areas: [
-      {
-        name: "منطقة الـ 800 فدان",
-        slug: "800-feddan", // ⚠️ لازم فولدر بنفس الاسم
-        description: "أكبر تجمع سكني متكامل الخدمات في المدينة.",
-        avgPrice: "من 650,000 إلى 950,000 جنيه",
-        services: ["مدارس حكومية", "وحدات صحية", "مواصلات"],
-        mapQuery: "800 Feddan Housing",
-        propertiesCount: 300,
-        avgPriceValue: 800,
-        typesCount: 1,
-        recentAds: 45,
-      },
-      {
-        name: "إسكان 1185 عمارة",
-        slug: "housing-1185", // ⚠️ لازم فولدر بنفس الاسم
-        description:
-          "الكتلة السكانية الأكبر وتمتاز بتوافر كافة الخدمات الشعبية والتجارية.",
-        avgPrice: "من 500,000 إلى 850,000 جنيه",
-        services: ["مجمعات مدارس", "مراكز طبية", "أسواق"],
-        mapQuery: "Housing 1185 Hadayek October",
-        propertiesCount: 400,
-        avgPriceValue: 650,
-        typesCount: 1,
-        recentAds: 50,
-      },
-    ],
-  },
+  
+  
 ];
