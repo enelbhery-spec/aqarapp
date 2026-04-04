@@ -1,7 +1,6 @@
 import Link from "next/link";
 import PropertyCard from "@/components/PropertyCard";
 import { createClient } from "@/utils/supabase/server";
-// استيراد بيانات المناطق الخاصة بك
 import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
 
 const ITEMS_PER_PAGE = 9;
@@ -16,12 +15,12 @@ export default async function HomePage(props: {
 
   const supabase = await createClient();
 
-  // 1. جلب العقارات المميزة
+  // 1. جلب العقارات المميزة - تم التعديل لـ 9 عقارات بدلاً من 3
   const { data: featuredProperties } = await supabase
     .from("featured_properties")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(3);
+    .limit(9);
 
   // 2. جلب العقارات العامة
   const { data: properties, error, count } = await supabase
@@ -36,6 +35,18 @@ export default async function HomePage(props: {
 
   const totalPages = count ? Math.ceil(count / ITEMS_PER_PAGE) : 0;
 
+  // --- دالة منطق ترقيم الصفحات المختصر ---
+  const getVisiblePages = (current: number, total: number) => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    
+    if (current <= 3) return [1, 2, 3, 4, "...", total];
+    if (current >= total - 2) return [1, "...", total - 3, total - 2, total - 1, total];
+    
+    return [1, "...", current - 1, current, current + 1, "...", total];
+  };
+
+  const visiblePages = getVisiblePages(currentPage, totalPages);
+
   return (
     <main className="bg-gray-50 text-gray-800 min-h-screen">
       {/* Hero Section */}
@@ -44,7 +55,7 @@ export default async function HomePage(props: {
         <p className="opacity-90">دليلك العقاري الشامل لأفضل المجمعات السكنية</p>
       </section>
 
-      {/* 🚀 قسم العقارات المميزة */}
+      {/* 🚀 قسم العقارات المميزة - يظهر الآن حتى 9 عقارات */}
       {featuredProperties && featuredProperties.length > 0 && (
         <section className="py-12 bg-emerald-50/50 border-b">
           <div className="container mx-auto px-4">
@@ -52,9 +63,6 @@ export default async function HomePage(props: {
               <h2 className="text-2xl font-bold text-emerald-800 flex items-center gap-2">
                 <span className="text-3xl">⭐</span> عقارات مميزة نوصي بها
               </h2>
-              <span className="bg-emerald-200 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                
-              </span>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -87,27 +95,33 @@ export default async function HomePage(props: {
           </div>
         )}
 
-        {/* Pagination */}
+        {/* Pagination المعدل والمختصر */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-12" dir="rtl">
+          <div className="flex justify-center items-center gap-2 mt-12 flex-wrap" dir="rtl">
             <Link
               href={`/?page=${currentPage - 1}`}
-              className={`px-4 py-2 rounded-xl border ${currentPage <= 1 ? "pointer-events-none opacity-30" : "hover:bg-green-50"}`}
+              className={`px-4 py-2 rounded-xl border font-bold ${currentPage <= 1 ? "pointer-events-none opacity-30" : "hover:bg-green-50 text-green-700"}`}
             >
               السابق
             </Link>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <Link
-                key={p}
-                href={`/?page=${p}`}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold ${currentPage === p ? "bg-green-600 text-white" : "bg-white border text-gray-600"}`}
-              >
-                {p}
-              </Link>
+
+            {visiblePages.map((p, idx) => (
+              typeof p === "number" ? (
+                <Link
+                  key={idx}
+                  href={`/?page=${p}`}
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all ${currentPage === p ? "bg-green-600 text-white shadow-lg shadow-green-200" : "bg-white border text-gray-600 hover:border-green-400"}`}
+                >
+                  {p}
+                </Link>
+              ) : (
+                <span key={idx} className="w-8 text-center text-gray-400 font-bold">...</span>
+              )
             ))}
+
             <Link
               href={`/?page=${currentPage + 1}`}
-              className={`px-4 py-2 rounded-xl border ${currentPage >= totalPages ? "pointer-events-none opacity-30" : "hover:bg-green-50"}`}
+              className={`px-4 py-2 rounded-xl border font-bold ${currentPage >= totalPages ? "pointer-events-none opacity-30" : "hover:bg-green-50 text-green-700"}`}
             >
               التالي
             </Link>
@@ -115,7 +129,7 @@ export default async function HomePage(props: {
         )}
       </section>
 
-      {/* ✅ قسم المناطق المعدل بحواف احترافية */}
+      {/* قسم المناطق */}
       <section className="py-20 bg-white border-t">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -128,37 +142,16 @@ export default async function HomePage(props: {
               <Link 
                 key={area.slug} 
                 href={`/areas/${area.slug}`}
-                // ✅ تم تغيير الحواف من rounded-[2rem] إلى rounded-2xl لشكل أكثر حدة واحترافية
                 className="group relative h-48 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/90 via-emerald-900/30 to-transparent z-10" />
-                
-                {/* خلفية ناعمة */}
                 <div className="absolute inset-0 bg-slate-100 group-hover:scale-105 transition-transform duration-700" />
-
                 <div className="absolute bottom-5 right-5 z-20 text-right" dir="rtl">
                   <h3 className="text-white text-lg font-bold mb-0.5">{area.name}</h3>
                   <p className="text-emerald-200 text-xs font-medium opacity-90">عرض التفاصيل ←</p>
                 </div>
-
-                {/* أيقونة تفاعلية ناعمة */}
-                <div className="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-sm p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
               </Link>
             ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <Link 
-              href="/areas" 
-              className="inline-flex items-center gap-2 text-emerald-700 font-bold hover:text-emerald-500 transition-colors"
-            >
-              عرض كافة مناطق حدائق أكتوبر
-              <span className="text-xl">←</span>
-            </Link>
           </div>
         </div>
       </section>
