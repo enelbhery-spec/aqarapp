@@ -1,7 +1,7 @@
 // src/app/terms/page.tsx
 export const metadata = {
-  title: "شروط الاستخدام | سوق العقارات",
-  description: "شروط وأحكام استخدام موقع سوق العقارات. الشروط القانونية للمستخدمين والزوار.",
+  title: "شروط الاستخدام | ترند عقار",
+  description: "شروط وأحكام استخدام موقع ترند عقار. الشروط القانونية للمستخدمين والزوار.",
   alternates: { canonical: "https://aqaratapp.netlify.app/terms" },
 };
 
@@ -11,7 +11,7 @@ export default function TermsPage() {
       <h1 className="text-3xl font-bold mb-4">شروط الاستخدام</h1>
 
       <p className="mb-4">
-        باستخدامك موقع <strong>سوق العقارات</strong>، فإنك توافق على الالتزام بهذه الشروط.
+        باستخدامك موقع <strong>ترند عقار</strong>، فإنك توافق على الالتزام بهذه الشروط.
         يرجى قراءة الأحكام بعناية.
       </p>
 
