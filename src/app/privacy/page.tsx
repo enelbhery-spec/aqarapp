@@ -1,7 +1,7 @@
 // src/app/privacy/page.tsx
 export const metadata = {
-  title: "سياسة الخصوصية | سوق العقارات",
-  description: "سياسة خصوصية موقع سوق العقارات. كيف نجمع ونستخدم ونحمي بيانات الزوار.",
+  title: "سياسة الخصوصية | ترند عقار",
+  description: "سياسة خصوصية موقع ترند عقار. كيف نجمع ونستخدم ونحمي بيانات الزوار.",
   alternates: { canonical: "https://aqaratapp.netlify.app/privacy" },
 };
 
@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       <h1 className="text-3xl font-bold mb-4">سياسة الخصوصية</h1>
 
       <p className="mb-4">
-        مرحبًا بك في موقع <strong>سوق العقارات</strong>. نحترم خصوصيتك ونلتزم بحماية بياناتك
+        مرحبًا بك في موقع <strong>ترند عقار</strong>. نحترم خصوصيتك ونلتزم بحماية بياناتك
         الشخصية. توضح هذه الصفحة المعلومات التي نجمعها وكيف نستخدمها ونحميها.
       </p>
 
