@@ -5,7 +5,6 @@ const nextConfig = {
   images: {
     formats: ["image/webp", "image/avif"],
 
-    // ✅ دعم Supabase بالكامل
     remotePatterns: [
       {
         protocol: "https",
@@ -13,8 +12,7 @@ const nextConfig = {
       },
     ],
 
-    // ✅ كاش للصور (30 يوم)
-    minimumCacheTTL: 2592000, 
+    minimumCacheTTL: 2592000,
   },
 
   compress: true,
@@ -22,7 +20,22 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "aqarapp.vercel.app", // 👈 رابط Vercel
+          },
+        ],
+        destination: "https://trand-aqar.online/:path*", // 👈 الدومين الجديد
+        permanent: true,
+      },
+    ];
+  },
 };
 
-// ✅ استخدم هذه الصيغة بدلاً من module.exports
 export default nextConfig;
