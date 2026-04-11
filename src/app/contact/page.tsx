@@ -21,35 +21,52 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(false); // تعديل بسيط: ابدأ التحميل
     setLoading(true);
 
-    const { error } = await supabase.from('messages').insert([
-      {
-        name: formData.name,
-        email: formData.email,
-        message: formData.message,
-      },
-    ]);
+    try {
+      // 1. الخطوة الأولى: إرسال الرسالة لإيميلك فوراً عبر Formspree
+      const emailResponse = await fetch('https://formspree.io/f/xojpgykk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
 
-    if (error) {
-      toast.error('حدث خطأ أثناء إرسال الرسالة ❌');
+      // 2. الخطوة الثانية: حفظ نسخة في Supabase كأرشيف للمشروع
+      const { error: supabaseError } = await supabase.from('messages').insert([
+        {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+        },
+      ]);
+
+      if (emailResponse.ok) {
+        toast.success('تم إرسال الرسالة بنجاح ووصلت لإيميل الإدارة ✅');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        throw new Error('Email service failed');
+      }
+
+      if (supabaseError) {
+        console.warn('تم إرسال الإيميل ولكن فشل الحفظ في الداتابيز:', supabaseError);
+      }
+
+    } catch (error) {
+      toast.error('حدث خطأ أثناء الإرسال ❌');
       console.error(error);
-    } else {
-      toast.success('تم إرسال الرسالة بنجاح ✅');
-      setFormData({ name: '', email: '', message: '' });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg">
-        {/* تغيير العنوان ليكون أكثر احترافية */}
         <h1 className="text-2xl font-bold mb-2 text-center text-blue-900">📩 تواصل مع ترند عقار</h1>
         <p className="text-center text-gray-500 mb-6 text-sm">
-          أو راسلنا مباشرة عبر: <span className="font-semibold text-blue-700">admin@trand-aqar.online</span>
+          أو راسلنا مباشرة عبر: <span className="font-semibold text-blue-700">support@trand-aqar.online</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -71,7 +88,6 @@ export default function ContactPage() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              /* تم تحديث المثال ليطابق بريدك الرسمي الجديد */
               placeholder="support@trand-aqar.online" 
               required
             />
