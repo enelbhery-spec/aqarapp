@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient'; // تأكد أن هذا هو مسار إعداد Supabase عندك
+import { supabase } from '@/lib/supabaseClient'; 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(false); // تعديل بسيط: ابدأ التحميل
     setLoading(true);
 
     const { error } = await supabase.from('messages').insert([
@@ -45,7 +46,11 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg">
-        <h1 className="text-2xl font-bold mb-6 text-center">📩 تواصل معنا</h1>
+        {/* تغيير العنوان ليكون أكثر احترافية */}
+        <h1 className="text-2xl font-bold mb-2 text-center text-blue-900">📩 تواصل مع ترند عقار</h1>
+        <p className="text-center text-gray-500 mb-6 text-sm">
+          أو راسلنا مباشرة عبر: <span className="font-semibold text-blue-700">admin@trand-aqar.online</span>
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -54,7 +59,7 @@ export default function ContactPage() {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="اكتب اسمك هنا"
+              placeholder="اكتب اسمك بالكامل"
               required
             />
           </div>
@@ -66,7 +71,8 @@ export default function ContactPage() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="en.elbhery@gmail.com"
+              /* تم تحديث المثال ليطابق بريدك الرسمي الجديد */
+              placeholder="support@trand-aqar.online" 
               required
             />
           </div>
@@ -77,13 +83,13 @@ export default function ContactPage() {
               name="message"
               value={formData.message}
               onChange={handleChange}
-              placeholder="اكتب رسالتك هنا..."
+              placeholder="اكتب تفاصيل استفسارك عن العقارات هنا..."
               required
             />
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? 'جاري الإرسال...' : 'إرسال'}
+          <Button type="submit" disabled={loading} className="w-full bg-blue-900 hover:bg-blue-800">
+            {loading ? 'جاري الإرسال...' : 'إرسال الرسالة'}
           </Button>
         </form>
       </div>
