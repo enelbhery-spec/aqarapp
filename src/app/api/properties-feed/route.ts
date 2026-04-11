@@ -19,16 +19,18 @@ export async function GET() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    // 1. جلب البيانات من جدول العقارات (properties)
-    const { data: properties, error } = await supabase
-      .from("properties")
-      .select("*");
+    // 1. جلب البيانات من الجدولين في وقت واحد (Parallel)
+    const [res1, res2] = await Promise.all([
+      supabase.from("properties").select("*"),
+      supabase.from("featured_properties").select("*") // الجدول الجديد من الصورة
+    ]);
 
-    if (error) {
-      return new NextResponse(error.message, { status: 500 });
-    }
+    // التحقق من الأخطاء
+    if (res1.error) throw new Error(res1.error.message);
+    if (res2.error) throw new Error(res2.error.message);
 
-    const safeProperties = properties || [];
+    // 2. دمج البيانات من الجدولين في قائمة واحدة
+    const allProperties = [...(res1.data || []), ...(res2.data || [])];
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
@@ -37,10 +39,11 @@ export async function GET() {
   <link>https://trand-aqar.online</link>
   <description>أحدث العقارات والشقق في حدائق أكتوبر</description>
 
-${safeProperties
+${allProperties
   .filter((p) => p.id && p.title && p.price)
   .map((p) => {
     const propertyLink = `https://trand-aqar.online/properties/${p.id}`;
+    // ملاحظة: تأكد أن روابط الصور في الجدول الجديد موجودة في حقل images أو image_url
     const mainImage = Array.isArray(p.images) ? p.images[0] : (p.image_url || "");
 
     return `
