@@ -6,10 +6,8 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  // تحديث الرابط الأساسي للدومين الجديد
   metadataBase: new URL("https://www.trand-aqar.online"),
   title: {
-    // جعل العنوان عاماً وشاملاً
     default: "تريند عقار | منصة بيع وشراء وتأجير العقارات",
     template: "%s | تريند عقار",
   },
@@ -35,6 +33,8 @@ export const metadata: Metadata = {
 
   other: {
     "google-adsense-account": "ca-pub-4973672854580770",
+    // ✅ كود التحقق من Google Search Console
+    "google-site-verification": "th4nEx63m_khSz1rJsNm9W606G7avLNf3V",
   },
 
   robots: {
@@ -45,10 +45,11 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
+
   alternates: {
-    // التحديث للرابط الرسمي الجديد
     canonical: "https://www.trand-aqar.online",
   },
+
   openGraph: {
     title: "تريند عقار | سوق العقارات الشامل",
     description:
@@ -59,19 +60,21 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.jpg", // تأكد من وجود صورة تحمل الهوية الجديدة بهذا الاسم
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "تريند عقار - وجهتك العقارية",
       },
     ],
   },
+
   twitter: {
     card: "summary_large_image",
     title: "تريند عقار",
     description: "أفضل منصة لعرض وطلب العقارات في مصر والوطن العربي",
     images: ["https://www.trand-aqar.online/og-image.jpg"],
   },
+
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",
@@ -87,7 +90,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
-        {/* Google Analytics - تأكد من تحديث المعرف إذا قمت بإنشاء Property جديدة للدومين الجديد */}
+        {/* Google Analytics */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=G-1QVGGKVV8F`}
           strategy="afterInteractive"
@@ -102,7 +105,19 @@ export default function RootLayout({
             });
           `}
         </Script>
+        <Script id="sw-register" strategy="afterInteractive">
+{`
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW registered'))
+        .catch(err => console.log('SW error', err));
+    });
+  }
+`}
+</Script>
       </head>
+
       <body className="bg-gray-50 text-gray-800">
         <Header />
         <main className="min-h-screen">{children}</main>
