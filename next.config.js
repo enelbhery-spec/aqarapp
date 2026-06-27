@@ -8,7 +8,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co",
+        hostname: "rkjeobavbxsarxbwmffj.supabase.co",
       },
     ],
 
@@ -28,10 +28,10 @@ const nextConfig = {
         has: [
           {
             type: "host",
-            value: "aqarapp.vercel.app", // 👈 رابط Vercel
+            value: "aqarapp.vercel.app",
           },
         ],
-        destination: "https://trand-aqar.online/:path*", // 👈 الدومين الجديد
+        destination: "https://trand-aqar.online/:path*",
         permanent: true,
       },
     ];

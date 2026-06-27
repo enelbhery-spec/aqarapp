@@ -1,27 +1,36 @@
 import { notFound } from "next/navigation";
-import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
+import { createClient } from "@/utils/supabase/server";
 import AreaTemplate from "@/components/AreaTemplate";
 import { getSimilarAreas } from "@/lib/similarAreas";
+import { hadayekOctoberAreas } from "@/data/hadayekOctoberAreas";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export default async function AreaPage({ params }: Props) {
-  // ✅ انتظار الـ params بشكل صحيح
   const { slug } = await params;
 
-  // ✅ البحث في كافة التصنيفات (كمبوندات، سياحية، إسكان)
-  const area = hadayekOctoberAreas
-    .flatMap((group) => group.areas)
-    .find((item) => item.slug === slug);
+  const supabase = await createClient();
 
-  // ✅ إذا لم يجد المنطقة في الملف المحلي، يوجه لصفحة 404
-  if (!area) {
+  // ✅ جلب بيانات المنطقة من الداتابيز
+  const { data: area, error } = await supabase
+    .from("areas")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error || !area) {
     notFound();
   }
 
-  // ✅ جلب المناطق المشابهة بناءً على الملف المحلي
+  // ✅ جلب صور المنطقة
+  const { data: images } = await supabase
+    .from("area_images")
+    .select("image_url")
+    .eq("area_slug", slug);
+
+  // ✅ المناطق المشابهة
   const similarAreas = getSimilarAreas(
     hadayekOctoberAreas,
     area,
@@ -30,7 +39,11 @@ export default async function AreaPage({ params }: Props) {
 
   return (
     <AreaTemplate
-      area={area} // سيحتوي الآن على description, avgPrice, services
+      area={{
+        ...area,
+        services: [],
+        images: images || [],
+      }}
       similarAreas={similarAreas}
     />
   );
