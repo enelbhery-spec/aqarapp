@@ -13,7 +13,7 @@ export default async function AreaPage({ params }: Props) {
 
   const supabase = await createClient();
 
-  // ✅ جلب بيانات المنطقة من الداتابيز
+  // 1. جلب بيانات المنطقة
   const { data: area, error } = await supabase
     .from("areas")
     .select("*")
@@ -24,13 +24,19 @@ export default async function AreaPage({ params }: Props) {
     notFound();
   }
 
-  // ✅ جلب صور المنطقة
+  // 2. جلب صور المنطقة
   const { data: images } = await supabase
     .from("area_images")
     .select("image_url")
     .eq("area_slug", slug);
 
-  // ✅ المناطق المشابهة
+  // 3. ✅ جلب العقارات المرتبطة بهذه المنطقة باستخدام area_id
+  const { data: properties } = await supabase
+    .from("properties") // تأكد أن اسم الجدول في داتابيز هو properties
+    .select("*")
+    .eq("area_id", area.id); // استخدام id المنطقة لجلب عقاراتها
+
+  // 4. المناطق المشابهة
   const similarAreas = getSimilarAreas(
     hadayekOctoberAreas,
     area,
@@ -41,8 +47,9 @@ export default async function AreaPage({ params }: Props) {
     <AreaTemplate
       area={{
         ...area,
-        services: [],
+        services: [], // يمكنك أيضاً جلب الخدمات بنفس طريقة العقارات إذا كان لها جدول
         images: images || [],
+        properties: properties || [], // ✅ تمرير العقارات للمكون
       }}
       similarAreas={similarAreas}
     />
