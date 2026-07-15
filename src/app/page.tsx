@@ -14,21 +14,28 @@ export default async function HomePage(props: {
 
   const supabase = await createClient();
 
-  // ✅ 1. عقارات مميزة
+  // ✅ 1. عقارات مميزة (تستعلم من featured_properties)
   const { data: featuredProperties } = await supabase
     .from("featured_properties")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(9);
+    .limit(3); // تم تحديدها بـ 3 لعرض الأبرز فقط في الأعلى
 
-  // ✅ 2. العقارات
+  // ✅ 2. أحدث الإضافات (تستعلم الآن من featured_properties بدلاً من properties)
   const { data: properties, error, count } = await supabase
-    .from("properties")
+    .from("featured_properties")
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  // ✅ 3. المناطق (🔥 الجديد)
+  // ✅ 3. جلب المقالات المخصصة للمدونة ترويجياً (🔥 جديد)
+  const { data: articles } = await supabase
+    .from("articles")
+    .select("id, property_id, article_title, article_content")
+    .order("id", { ascending: false })
+    .limit(3); // جلب آخر 3 مقالات ترويجية للمدونة بالصفحة الرئيسية
+
+  // ✅ 4. المناطق
   const { data: areas } = await supabase
     .from("areas")
     .select("name, slug")
@@ -78,7 +85,7 @@ export default async function HomePage(props: {
         </section>
       )}
 
-      {/* 🏠 Properties */}
+      {/* 🏠 Properties (الآن تقرأ من featured_properties كلياً) */}
       <section className="py-16 container mx-auto px-4">
         <h2 className="text-3xl font-bold mb-10 text-center text-gray-700">
           أحدث الإضافات
@@ -127,8 +134,60 @@ export default async function HomePage(props: {
         )}
       </section>
 
-      {/* 🗺️ المناطق (🔥 تم التعديل هنا فقط) */}
-      <section className="py-20 bg-white border-t">
+{/* 📝 قسم المقالات العقارية ترويجياً */}
+{articles && articles.length > 0 && (
+  <section className="py-16 bg-gray-100/60 border-t border-b">
+    <div className="container mx-auto px-4">
+      <div className="text-center mb-10">
+        <h2 className="text-3xl font-bold text-gray-800 mb-2">
+          ✍️ مقالات عقارية تهمك
+        </h2>
+        <p className="text-gray-500">
+          تعرف على نصائح الشراء وأحدث تقارير الاستثمار في حدائق أكتوبر
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8" dir="rtl">
+        {articles.map((article: any) => {
+          // دالة ذكية لإزالة وسوم الـ HTML من النص المختصر في الكارت
+          const cleanSnippet = article.article_content
+            ? article.article_content.replace(/<[^>]*>/g, "").replace(/مقدمة/g, "")
+            : "";
+
+          return (
+            <div key={article.id} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-150 flex flex-col justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2">
+                  {article.article_title}
+                </h3>
+                {/* عرض النص نظيفاً تماماً وبدون وسوم HTML */}
+                <p className="text-gray-600 text-sm mb-4 line-clamp-4 leading-relaxed">
+                  {cleanSnippet}
+                </p>
+              </div>
+              <div className="flex justify-between items-center mt-4 border-t pt-4">
+                <Link
+                  href={`/articles/${article.id}`}
+                  className="text-emerald-600 hover:text-emerald-700 text-sm font-bold"
+                >
+                  اقرأ المقال بالكامل ←
+                </Link>
+                <Link
+                  href={`/properties/${article.property_id}`}
+                  className="text-gray-500 hover:text-gray-700 text-xs font-semibold"
+                >
+                  معاينة العقار 🏠
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}
+      {/* 🗺️ المناطق */}
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
