@@ -22,15 +22,14 @@ export default function PropertyImageSlider({ images, title }: Props) {
   return (
     <div className="w-full">
       {/* الصورة الرئيسية */}
-      <div className="relative aspect-[9/6] w-full rounded-xl overflow-hidden bg-black">
+      <div className="relative aspect-[9/6] w-full rounded-xl overflow-hidden bg-gray-100">
         <Image
           src={images[current]}
           alt={title}
           fill
           priority
           sizes="(max-width: 400px) 100vw, 80vw"
-          className="object-cover"
-
+          className="object-contain"
         />
 
         {/* أزرار */}
@@ -66,7 +65,7 @@ export default function PropertyImageSlider({ images, title }: Props) {
             <button
               key={index}
               onClick={() => setCurrent(index)}
-              className={`relative w-24 h-16 rounded-lg overflow-hidden border-2 ${
+              className={`relative w-24 h-16 rounded-lg overflow-hidden border-2 bg-gray-50 ${
                 current === index
                   ? "border-blue-600"
                   : "border-transparent"
@@ -76,7 +75,7 @@ export default function PropertyImageSlider({ images, title }: Props) {
                 src={img}
                 alt={`${title} ${index + 1}`}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </button>
           ))}
