@@ -1,16 +1,14 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import PropertyImagesSlider from "@/components/PropertyImagesSlider";
+import { Metadata } from "next";
 
-export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
-  // 1. فك تشفير المعرف (ID)
-  const { id } = await params;
+// 1. دالة مساعدة لجلب بيانات العقار لتجنب تكرار الكود
+async function getPropertyData(id: string) {
   const supabase = await createClient();
-
   const propertyId = parseInt(id);
-  if (isNaN(propertyId)) return notFound();
+  if (isNaN(propertyId)) return null;
 
-  // 2. جلب البيانات من الجداول
   let { data: property, error } = await supabase
     .from("featured_properties")
     .select("*")
@@ -18,29 +16,55 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     .single();
 
   if (!property) {
-    const { data: generalProperty, error: generalError } = await supabase
+    const { data: generalProperty } = await supabase
       .from("properties")
       .select("*")
       .eq("id", propertyId)
       .single();
     
     property = generalProperty;
-    error = generalError;
   }
 
-  if (error || !property) return notFound();
+  return property;
+}
 
-  // 3. تجهيز الصور
+// 2. دالة توليد الـ Metadata ديناميكياً لمحركات البحث (SEO)
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const property = await getPropertyData(id);
+
+  if (!property) {
+    return {
+      title: "عقار غير موجود | تريند عقار",
+    };
+  }
+
+  return {
+    title: `${property.title} | تريند عقار`,
+    // هنا نقوم بوضع حقل الـ meta الجديد، وفي حال كان فارغاً نضع وصفاً احتياطياً تلقائياً من العنوان والسعر لضمان قوة الـ SEO دائماً
+    description: property.meta || `${property.title} بسعر ${Number(property.price || 0).toLocaleString()} ج.م. تواصل الآن للمعاينة والتفاصيل عبر منصة تريند عقار.`,
+  };
+}
+
+// 3. المكون البرمجي للصفحة
+export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const property = await getPropertyData(id);
+
+  if (!property) return notFound();
+
+  // تجهيز الصور
   const images = property.images && Array.isArray(property.images) 
     ? property.images 
     : [property.thumbnail].filter(Boolean);
 
-  // 4. تحضير الـ Schema (مع التأكد من وجود قيم صالحة لتجنب أخطاء Webpack)
+  // تحضير الـ Schema
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": property.title || "عقار في حدائق أكتوبر",
-    "description": (property.description || "عقار مميز للتواصل المباشر").substring(0, 160),
+    // نستخدم الـ meta الجديد أيضاً كـ وصف للـ Schema إذا كان متوفراً
+    "description": (property.meta || property.description || "عقار مميز للتواصل المباشر").substring(0, 160),
     "image": images[0] || "",
     "offers": {
       "@type": "Offer",
