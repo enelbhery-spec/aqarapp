@@ -15,23 +15,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from("featured_properties")
     .select("id, created_at");
 
-  // تجهيز روابط العقارات العامة
-  const propertyEntries: MetadataRoute.Sitemap = (properties || []).map((prop) => ({
-    url: `${baseUrl}/properties/${prop.id}`,
-    lastModified: new Date(prop.created_at),
-    changeFrequency: "daily",
+  // 3. جلب المقالات ديناميكياً (الموجودة في الصفحة الرئيسية للموقع)
+  const { data: articles } = await supabase
+    .from("articles") // تأكد من اسم جدول المقالات لديك (مثلاً: articles أو blogs)
+    .select("id, created_at");
+
+  // استخدام Map لمنع تكرار روابط العقارات إذا كان العقار عام ومميز في نفس الوقت
+  const propertyMap = new Map<string, any>();
+
+  // تجهيز العقارات العامة
+  (properties || []).forEach((prop) => {
+    propertyMap.set(prop.id, {
+      url: `${baseUrl}/properties/${prop.id}`,
+      lastModified: new Date(prop.created_at),
+      changeFrequency: "daily",
+      priority: 0.7,
+    });
+  });
+
+  // تجهيز العقارات المميزة (لتحديث الأولوية إلى 0.9 لو تكرر)
+  (featuredProperties || []).forEach((prop) => {
+    propertyMap.set(prop.id, {
+      url: `${baseUrl}/properties/${prop.id}`,
+      lastModified: new Date(prop.created_at),
+      changeFrequency: "daily",
+      priority: 0.9,
+    });
+  });
+
+  const propertyEntries: MetadataRoute.Sitemap = Array.from(propertyMap.values());
+
+  // تجهيز روابط المقالات العقارية ديناميكياً
+  const articleEntries: MetadataRoute.Sitemap = (articles || []).map((article) => ({
+    url: `${baseUrl}/blog/${article.id}`, // تأكد من مسار المقالات في مشروعك (مثلاً /blog/ أو /articles/)
+    lastModified: new Date(article.created_at),
+    changeFrequency: "weekly",
     priority: 0.7,
   }));
 
-  // تجهيز روابط العقارات المميزة
-  const featuredEntries: MetadataRoute.Sitemap = (featuredProperties || []).map((prop) => ({
-    url: `${baseUrl}/properties/${prop.id}`,
-    lastModified: new Date(prop.created_at),
-    changeFrequency: "daily",
-    priority: 0.9, // أولوية أعلى للعقارات المميزة
-  }));
-
-  // الصفحات الثابتة
+  // الصفحات الثابتة (تمت إضافة صفحات الفوتر المفقودة في السايت ماب القديم)
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}`,
@@ -69,8 +91,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    // صفحات روابط الفوتر الثابتة المفقودة:
+    {
+      url: `${baseUrl}/privacy-policy`, // سياسة الخصوصية
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terms-of-use`, // شروط الاستخدام
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/contact-us`, // اتصل بنا
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
   ];
 
-  // دمج كل الروابط معاً
-  return [...staticPages, ...propertyEntries, ...featuredEntries];
+  // دمج كل الروابط معاً (الصفحات الثابتة + العقارات بدون تكرار + المقالات)
+  return [...staticPages, ...propertyEntries, ...articleEntries];
 }
